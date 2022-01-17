@@ -20,7 +20,15 @@
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_statistic_screen.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_training_details_screen.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_update_profile_screen.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_all__trainings_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_current_training_screen.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_maps.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_profile_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_progress_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_single_training_details_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_statistic_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/fragment_update_profile_scr.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/menu/bottom_menu.xml" value="0.25416666666666665" />
       </map>
     </option>
   </component>
