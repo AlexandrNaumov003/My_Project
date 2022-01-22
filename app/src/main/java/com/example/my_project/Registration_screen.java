@@ -27,11 +27,11 @@ public class Registration_screen extends AppCompatActivity {
         setContentView(R.layout.activity_registration_screen);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        name = findViewById(R.id.et_name);
-        username = findViewById(R.id.et_username);
-        email = findViewById(R.id.et_email);
-        password = findViewById(R.id.et_password);
-        register = findViewById(R.id.btn_register);
+        name = findViewById(R.id.et_name_registration);
+        username = findViewById(R.id.et_username_registration);
+        email = findViewById(R.id.et_email_registration);
+        password = findViewById(R.id.et_password_registration);
+        register = findViewById(R.id.btn_register_registration);
         mAuth = FirebaseAuth.getInstance();
 
         register.setOnClickListener(new View.OnClickListener() {
