@@ -11,19 +11,19 @@
         android:theme="@style/Theme.My_Project">
         <activity
             android:name=".Update_Profile_screen"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".Statistic_screen"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".Single_Training_Details_screen"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".All_Trainings_screen"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".Registration_screen"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -35,7 +35,7 @@
         </activity>
         <activity
             android:name=".Splash_screen"
-            android:exported="true" />
+            android:exported="false" />
     </application>
 
 </manifest>

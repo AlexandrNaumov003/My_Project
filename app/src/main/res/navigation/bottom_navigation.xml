@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_navigation"
+    app:startDestination="@id/profile_scr">
+    <fragment
+        android:id="@+id/profile_scr"
+        android:name="com.example.my_project.Profile_scr"
+        android:label="Profile_scr"
+        tools:layout="@layout/fragment_profile_scr"/>
+    <fragment
+        android:id="@+id/progress_scr"
+        android:name="com.example.my_project.Progress_scr"
+        android:label="Progress_scr"
+        tools:layout="@layout/fragment_progress_scr"/>
+    <fragment
+        android:id="@+id/current_Training_screen"
+        android:name="com.example.my_project.Current_Training_screen"
+        android:label="fragment_current_training_screen"
+        tools:layout="@layout/fragment_current_training_screen" />
+</navigation>
