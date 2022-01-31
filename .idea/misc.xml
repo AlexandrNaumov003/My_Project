@@ -3,9 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_baseline_directions_run.xml" value="0.2703125" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout-w1240dp/activity_abc.xml" value="0.2390625" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout-w936dp/activity_abc.xml" value="0.190625" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_abc.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_add_training_scr.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_all_trainings_screen.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_last_trainings_screen.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_log_in_screen.xml" value="0.25416666666666665" />
