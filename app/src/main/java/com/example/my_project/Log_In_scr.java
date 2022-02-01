@@ -1,5 +1,6 @@
 package com.example.my_project;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,11 +24,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class Log_In_scr extends AppCompatActivity implements TextWatcher {
 
-    EditText et_email, et_password;
-    TextView tv_sign_up;
-    Button btn_login;
+    EditText et_email, et_password, et_put_email;
+    TextView tv_sign_up, tv_click_here;
+    Button btn_login, btn_send;
     FirebaseAuth firebaseAuth;
     String email, password;
+    Dialog d;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,13 @@ public class Log_In_scr extends AppCompatActivity implements TextWatcher {
         setContentView(R.layout.activity_log_in_screen);
 
         tv_sign_up=findViewById(R.id.tv_sign_up_log_in);
+        tv_click_here=findViewById(R.id.tv_forgot_password_click_login);
+        tv_click_here.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createDialog();
+            }
+        });
         tv_sign_up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,6 +85,39 @@ public class Log_In_scr extends AppCompatActivity implements TextWatcher {
         });
 
     }
+
+   public void createDialog(){
+        d=new Dialog(this);
+        d.setContentView(R.layout.activity_forgot_password_scr);
+        d.setCancelable(true);
+        et_put_email=d.findViewById(R.id.et_put_email);
+        btn_send=d.findViewById(R.id.btn_send);
+        btn_send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth auth = FirebaseAuth.getInstance();
+                String user_email = et_put_email.getText().toString();
+                auth.sendPasswordResetEmail(user_email).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    //Log.d(TAG, "Email sent.");
+                                    Toast.makeText(getApplicationContext(), "Password has been sent to your E-mail", Toast.LENGTH_SHORT).show();
+                                    d.dismiss();
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), "&&&&&", Toast.LENGTH_SHORT).show();
+                                    d.dismiss();
+                                }
+                            }
+                        });
+            }
+        });
+       d.show();
+
+   }
+
+
 
 
     private boolean validatePassword(){

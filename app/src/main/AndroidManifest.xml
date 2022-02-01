@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.My_Project">
         <activity
+            android:name=".Forgot_Password_scr"
+            android:exported="true" />
+        <activity
             android:name=".Add_Training_scr"
             android:exported="false" />
         <activity
