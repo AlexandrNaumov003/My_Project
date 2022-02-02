@@ -24,6 +24,7 @@ public class All_Trainings_screen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_trainings_screen);
+        getSupportActionBar().hide();
 
         RunList = new ArrayList<Run>();
         lv = findViewById(R.id.lv_trainings_all_trainings_screen);

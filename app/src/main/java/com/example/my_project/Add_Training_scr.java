@@ -23,6 +23,7 @@ public class Add_Training_scr extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_training_scr);
+        getSupportActionBar().hide();
 
         time = findViewById(R.id.tv_time_add_training);
         distance = findViewById(R.id.tv_distance_add_training);
