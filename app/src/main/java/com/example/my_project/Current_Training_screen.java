@@ -1,64 +1,115 @@
 package com.example.my_project;
 
+
+import android.annotation.SuppressLint;
+import android.location.Location;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Current_Training_screen#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class Current_Training_screen extends Fragment {
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class Current_Training_screen extends Fragment implements GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener, OnMapReadyCallback {
 
-    public Current_Training_screen() {
-        // Required empty public constructor
-    }
+        private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Current_Training_screen.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Current_Training_screen newInstance(String param1, String param2) {
-        Current_Training_screen fragment = new Current_Training_screen();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+            @Override
+            public void onMapReady(@NonNull GoogleMap googleMap) {
+                map = googleMap;
+                LatLng sydney = new LatLng(-34, 151);
+                map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+                map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            }
+        };
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+        private GoogleMap map;
+
+        private FusedLocationProviderClient client;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            if(getArguments() != null) {
+
+            }
+
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+
+            BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavigationView);
+
+
         }
+
+        @Nullable
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater,
+                @Nullable ViewGroup container,
+                @Nullable Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_current_training_screen, container, false);
+        }
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+
+            SupportMapFragment mapFragment =
+                    (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this);
+            }
+
+            client = LocationServices.getFusedLocationProviderClient(requireContext());
+
+        }
+
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onMapReady(@NonNull GoogleMap googleMap) {
+            map = googleMap;
+            LatLng sydney = new LatLng(-34, 151);
+            map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+            map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+            map.setMyLocationEnabled(true);
+            map.setOnMyLocationButtonClickListener(this);
+
+            map.setOnMyLocationClickListener(this);
+
+            GoogleMapOptions options = new GoogleMapOptions();
+            options.mapType(GoogleMap.MAP_TYPE_NORMAL);
+        }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        return false;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_current_training_screen, container, false);
+    public void onMyLocationClick(@NonNull Location location) {
+
     }
 }
+

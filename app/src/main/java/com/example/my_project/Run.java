@@ -1,47 +1,93 @@
 package com.example.my_project;
 
+import java.time.LocalDate;
+
 public class Run {
-    private String time;
-    private String speed;
-    private String distance;
+    private int time;
+    private int speed;
+    private int distance;
     private String uid;
     private String key;
     private int image;
+    private int year;
+    private int month;
+    private int day;
 
-    public Run(String time, String speed, String distance, String uid, String key) {
+
+
+    public Run(int time, int speed, int distance, String uid, String key, int year, int month, int day) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
         this.distance = distance;
         this.uid = uid;
         this.key = key;
+        this.year=year;
+        this.month=month;
+        this.day=day;
+
+    }
+    public Run(int time, int speed, int distance, String uid, String key, LocalDate localDate) {
+        this.image = R.drawable.ic_baseline_directions_run;
+        this.time = time;
+        this.speed = speed;
+        this.distance = distance;
+        this.uid = uid;
+        this.key = key;
+        this.year=localDate.getYear();
+        this.month=localDate.getMonthValue();
+        this.day=localDate.getDayOfMonth();
 
     }
     public Run() {
 
     }
 
-    public String getTime() {
+    public int getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(int time) {
         this.time = time;
     }
 
-    public String getSpeed() {
+    public int getSpeed() {
         return speed;
     }
 
-    public void setSpeed(String speed) {
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public void setSpeed(int speed) {
         this.speed = speed;
     }
 
-    public String getDistance() {
+    public int getDistance() {
         return distance;
     }
 
-    public void setDistance(String distance) {
+    public void setDistance(int distance) {
         this.distance = distance;
     }
 

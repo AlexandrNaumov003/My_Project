@@ -72,7 +72,7 @@ public class Log_In_scr extends AppCompatActivity implements TextWatcher {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Toast.makeText(getApplicationContext(), "Successful", Toast.LENGTH_SHORT).show();
-                                Intent intent=new Intent(Log_In_scr.this, All_Trainings_screen.class);
+                                Intent intent=new Intent(Log_In_scr.this, MainActivity.class);
                                 startActivity(intent);
                             }
                             else{

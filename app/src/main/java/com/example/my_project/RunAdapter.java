@@ -50,9 +50,9 @@ public class RunAdapter extends ArrayAdapter<Run>  {
         TextView distance=view.findViewById(R.id.tv_distance_row_run);
         TextView time=view.findViewById(R.id.tv_time_row_run);
         TextView speed=view.findViewById(R.id.tv_speed_row_run);
-        time.setText(tmp.getTime());
-        distance.setText(tmp.getDistance());
-        speed.setText(tmp.getSpeed());
+        time.setText(""+tmp.getTime());
+        distance.setText(""+tmp.getDistance());
+        speed.setText(""+tmp.getSpeed());
 
         return view;
     }
