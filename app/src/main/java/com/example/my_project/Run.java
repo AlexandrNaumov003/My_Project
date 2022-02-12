@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public class Run {
     private int time;
-    private int speed;
-    private int distance;
+    private double speed;
+    private double distance;
     private String uid;
     private String key;
     private int image;
@@ -15,7 +15,7 @@ public class Run {
 
 
 
-    public Run(int time, int speed, int distance, String uid, String key, int year, int month, int day) {
+    public Run(int time, double speed, double distance, String uid, String key, int year, int month, int day) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
@@ -27,7 +27,7 @@ public class Run {
         this.day=day;
 
     }
-    public Run(int time, int speed, int distance, String uid, String key, LocalDate localDate) {
+    public Run(int time, double speed, double distance, String uid, String key, LocalDate localDate) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
@@ -51,7 +51,7 @@ public class Run {
         this.time = time;
     }
 
-    public int getSpeed() {
+    public double getSpeed() {
         return speed;
     }
 
@@ -79,15 +79,15 @@ public class Run {
         this.day = day;
     }
 
-    public void setSpeed(int speed) {
+    public void setSpeed(double speed) {
         this.speed = speed;
     }
 
-    public int getDistance() {
+    public double getDistance() {
         return distance;
     }
 
-    public void setDistance(int distance) {
+    public void setDistance(double distance) {
         this.distance = distance;
     }
 

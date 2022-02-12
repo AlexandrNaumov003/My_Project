@@ -49,7 +49,7 @@ public class Add_Training_scr extends AppCompatActivity implements View.OnClickL
 
             LocalDate today=LocalDate.now();
 
-            Run r = new Run(Integer.parseInt(time.getText().toString()), Integer.parseInt(speed.getText().toString()), Integer.parseInt(distance.getText().toString()),uid, "", today );
+            Run r = new Run(Integer.parseInt(time.getText().toString()), Double.parseDouble(speed.getText().toString()), Double.parseDouble(distance.getText().toString()),uid, "", today );
 
            /* Run r1=new Run(1, "speed1", "dist1", uid, "", 2022, 11,1);
             Run r2=new Run(2, "speed2", "dist2", uid, "", 2022, 11,23);
