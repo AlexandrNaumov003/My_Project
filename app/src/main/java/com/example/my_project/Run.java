@@ -12,6 +12,7 @@ public class Run {
     private int year;
     private int month;
     private int day;
+    private long finishTime;
 
 
 
@@ -27,7 +28,7 @@ public class Run {
         this.day=day;
 
     }
-    public Run(int time, double speed, double distance, String uid, String key, LocalDate localDate) {
+    public Run(int time, double speed, double distance, String uid, String key, LocalDate localDate, long finishTime) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
@@ -37,6 +38,7 @@ public class Run {
         this.year=localDate.getYear();
         this.month=localDate.getMonthValue();
         this.day=localDate.getDayOfMonth();
+        this.finishTime=finishTime;
 
     }
     public Run() {
@@ -125,5 +127,13 @@ public class Run {
                 ", key='" + key + '\'' +
                 ", image=" + image +
                 '}';
+    }
+
+    public long getFinishTime() {
+        return finishTime;
+    }
+
+    public void setFinishTime(long finishTime) {
+        this.finishTime = finishTime;
     }
 }

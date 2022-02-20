@@ -17,10 +17,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class Registration_screen extends AppCompatActivity implements TextWatcher {
 
-    EditText name, username, email, password;
+    EditText name, surname, email, password;
     Button register;
     FirebaseAuth mAuth;
 
@@ -38,7 +41,7 @@ public class Registration_screen extends AppCompatActivity implements TextWatche
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         name = findViewById(R.id.et_name_registration);
-        username = findViewById(R.id.et_username_registration);
+        surname = findViewById(R.id.et_surname_registration);
         email = findViewById(R.id.et_email_registration);
         password = findViewById(R.id.et_password_registration);
         password.addTextChangedListener(this);
@@ -56,6 +59,11 @@ public class Registration_screen extends AppCompatActivity implements TextWatche
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Toast.makeText(Registration_screen.this, "User registered", Toast.LENGTH_SHORT).show();
+                                FirebaseUser firebaseUser=FirebaseAuth.getInstance().getCurrentUser();
+                                String uid=firebaseUser.getUid();
+                                User user=new User(name.getText().toString(), surname.getText().toString(), email.getText().toString(), uid);
+                                DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference("Users");
+                                databaseReference.child(uid).setValue(user);
                             }
                         }
                     });

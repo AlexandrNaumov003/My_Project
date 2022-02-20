@@ -24,7 +24,6 @@ public class FirebaseUtils {
         return FirebaseDatabase.getInstance();
     }
 
-    //ToDo change reference to "Events"
     public static final DatabaseReference usersDatabase = getDatabase().getReference("Users").getRef();
 
     @NonNull
@@ -39,5 +38,10 @@ public class FirebaseUtils {
     @NonNull
     public static DatabaseReference getCurrentUserRuns(){
         return getDatabase().getReference("Users").child(getCurrentUID()).child("Runs").getRef();
+    }
+
+    @NonNull
+    public static DatabaseReference getCurrentUserRef(){
+        return usersDatabase.child(getCurrentUID()).getRef();
     }
 }

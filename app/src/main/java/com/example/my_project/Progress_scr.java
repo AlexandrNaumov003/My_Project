@@ -21,6 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -128,7 +129,7 @@ public class Progress_scr extends Fragment {
         Query query2=ref1.orderByChild("month").equalTo(month);
         DatabaseReference ref2=query2.getRef();
 
-        Query query3=ref2.orderByChild("day").limitToLast(3);
+        Query query3=ref2.orderByChild("finishTime").limitToLast(3);
 
         query3.addValueEventListener(new ValueEventListener() {
             @Override
@@ -138,11 +139,12 @@ public class Progress_scr extends Fragment {
                     Run r = data.getValue(Run.class);
                     RunList.add(r);
                 }
-                int length=RunList.size()-1;
+                /*int length=RunList.size()-1;
                 for (int i = length; i >=0 ; i--) {
                     Run r= RunList.get(length-i);
                     RunList.set(i, r);
-                }
+                }*/
+                Collections.reverse(RunList);
                 adapter = new RunAdapter(RunList,getContext(), 0, 0);
                 lv.setAdapter(adapter);
             }

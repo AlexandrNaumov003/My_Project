@@ -1,12 +1,21 @@
 package com.example.my_project;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -14,6 +23,9 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class Profile_scr extends Fragment {
+
+    TextView name, surname, email;
+    Button btn_update;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -53,6 +65,27 @@ public class Profile_scr extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        FirebaseUtils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    User user=snapshot.getValue(User.class);
+                    String uname=user.getName();
+                    String usurname=user.getSurname();
+                    String uemail=user.getEmail();
+
+                    name.setText(uname);
+                    surname.setText(usurname);
+                    email.setText(uemail);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override
@@ -60,5 +93,24 @@ public class Profile_scr extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_profile_scr, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        name=view.findViewById(R.id.tv_name_profile_screen);
+        surname=view.findViewById(R.id.tv_surname_profile_screen);
+        email=view.findViewById(R.id.tv_email_profile_screen);
+        btn_update=view.findViewById(R.id.btn_update_profile_profile_screen);
+        btn_update.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(requireContext(), Update_Profile_screen.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 }
