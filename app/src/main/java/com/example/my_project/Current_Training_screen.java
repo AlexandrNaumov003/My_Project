@@ -4,12 +4,14 @@ package com.example.my_project;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -22,7 +24,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,14 +36,22 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.List;
 import java.util.Locale;
 
 
-public class Current_Training_screen extends Fragment implements GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener, OnMapReadyCallback {
+public class Current_Training_screen extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
+        GoogleMap.OnMyLocationClickListener,
+        OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener {
 
     public static String TAG = "naumov";
 
@@ -47,6 +60,12 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         private FusedLocationProviderClient client;
         TextView timeView;
         Button btn_start, btn_stop, btn_reset;
+
+
+    private Polyline gpsTrack;
+    private SupportMapFragment mapFragment;
+    private GoogleApiClient googleApiClient;
+    private LatLng lastKnownLatLng;
 
 
     // Use seconds, running and wasRunning respectively
@@ -99,15 +118,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 // Get the previous state of the stopwatch
                 // if the activity has been
                 // destroyed and recreated.
-                seconds
-                        = savedInstanceState
-                        .getInt("seconds");
-                running
-                        = savedInstanceState
-                        .getBoolean("running");
-                wasRunning
-                        = savedInstanceState
-                        .getBoolean("wasRunning");
+                seconds = savedInstanceState.getInt("seconds");
+                running = savedInstanceState.getBoolean("running");
+                wasRunning = savedInstanceState.getBoolean("wasRunning");
             }
             runTimer();
 
@@ -115,6 +128,19 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavigationView);
 
+            SupportMapFragment mapFragment =
+                    (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this);
+            }
+
+            if (googleApiClient == null) {
+                googleApiClient = new GoogleApiClient.Builder(requireContext())
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .addApi(LocationServices.API)
+                        .build();
+            }
 
         }
 
@@ -124,12 +150,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     public void onSaveInstanceState(
             Bundle savedInstanceState)
     {
-        savedInstanceState
-                .putInt("seconds", seconds);
-        savedInstanceState
-                .putBoolean("running", running);
-        savedInstanceState
-                .putBoolean("wasRunning", wasRunning);
+        savedInstanceState.putInt("seconds", seconds);
+        savedInstanceState.putBoolean("running", running);
+        savedInstanceState.putBoolean("wasRunning", wasRunning);
     }
 
     // If the activity is paused,
@@ -140,6 +163,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         super.onPause();
         wasRunning = running;
         running = false;
+
+
+        stopLocationUpdates();
     }
 
     // If the activity is resumed,
@@ -152,12 +178,16 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         if (wasRunning) {
             running = true;
         }
+
+        if (googleApiClient.isConnected()) {
+            startLocationUpdates();
+        }
     }
 
-    // Start the stopwatch running
-    // when the Start button is clicked.
-    // Below method gets called
-    // when the Start button is clicked.
+    /* Start the stopwatch running
+     when the Start button is clicked.
+     Below method gets called
+     when the Start button is clicked.*/
     public void onClickStart(View view)
     {
         running = true;
@@ -192,8 +222,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         // Get the text view.
 
         // Creates a new Handler
-        final Handler handler
-                = new Handler();
+        final Handler handler = new Handler();
 
         // Call the post() method,
         // passing in a new Runnable.
@@ -212,11 +241,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
                 // Format the seconds into hours, minutes,
                 // and seconds.
-                String time
-                        = String
-                        .format(Locale.getDefault(),
-                                "%d:%02d:%02d", hours,
-                                minutes, secs);
+                String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
 
                 // Set the text view text.
                 timeView.setText(time);
@@ -247,8 +272,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
             super.onViewCreated(view, savedInstanceState);
 
-            SupportMapFragment mapFragment =
-                    (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
             if (mapFragment != null) {
                 mapFragment.getMapAsync(this);
             }
@@ -317,10 +341,17 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             }
             GoogleMapOptions options = new GoogleMapOptions();
             options.mapType(GoogleMap.MAP_TYPE_NORMAL);
+
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.color(Color.CYAN);
+        polylineOptions.width(4);
+        gpsTrack = map.addPolyline(polylineOptions);
         }
 
     @Override
     public boolean onMyLocationButtonClick() {
+        getMyLocation();
         return false;
     }
 
@@ -349,6 +380,103 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 //Permission not granted
             }
 //            triggerRebirth(requireContext());
+        }
+    }
+
+
+    @Override
+    public void onStart() {
+        googleApiClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
+    }
+
+   /* @Override
+    public void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }*/
+
+   /* @Override
+    public void onResume() {
+        super.onResume();
+        if (googleApiClient.isConnected()) {
+            startLocationUpdates();
+        }
+    }*/
+
+
+
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        startLocationUpdates();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        lastKnownLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        updateTrack();
+    }
+
+
+    @SuppressLint("MissingPermission")
+    protected void startLocationUpdates() {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(4000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+    }
+
+    protected void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                googleApiClient, this);
+    }
+
+    private void updateTrack() {
+        List<LatLng> points = gpsTrack.getPoints();
+        points.add(lastKnownLatLng);
+        gpsTrack.setPoints(points);
+    }
+
+    public void getDistance(){
+        List<LatLng> points = gpsTrack.getPoints();
+        double distance = 0;
+        for (int i = 1; i< points.size(); i++){
+            LatLng previous = points.get(i-1);
+            LatLng point = points.get(i);
+            double lat = Math.abs(point.latitude - previous.latitude);
+            double lng = Math.abs(point.longitude - previous.longitude);
         }
     }
 }
