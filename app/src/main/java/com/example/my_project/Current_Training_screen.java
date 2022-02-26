@@ -58,8 +58,8 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         private GoogleMap map;
 
         private FusedLocationProviderClient client;
-        TextView timeView;
-        Button btn_start, btn_stop, btn_reset;
+        TextView timeView, distanceView, speedView;
+        Button btn_start, btn_stop, btn_reset, btn_pause, btn_resume;
 
 
     private Polyline gpsTrack;
@@ -191,6 +191,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     public void onClickStart(View view)
     {
         running = true;
+        googleApiClient.connect();
     }
 
     // Stop the stopwatch running
@@ -200,6 +201,22 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     public void onClickStop(View view)
     {
         running = false;
+        googleApiClient.disconnect();
+
+    }
+
+    public void onClickPause(View view)
+    {
+        running = false;
+        googleApiClient.disconnect();
+
+    }
+
+    public void onClickResume(View view)
+    {
+        running = true;
+        googleApiClient.connect();
+
     }
 
     // Reset the stopwatch when
@@ -279,14 +296,20 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             client = LocationServices.getFusedLocationProviderClient(requireContext());
             timeView = view.findViewById(R.id.time_view);
+            distanceView = view.findViewById(R.id.distance_view);
+            speedView = view.findViewById(R.id.speed_view);
 
             btn_start=view.findViewById(R.id.start_button);
             btn_stop=view.findViewById(R.id.stop_button);
             btn_reset=view.findViewById(R.id.reset_button);
+            btn_pause=view.findViewById(R.id.pause_button);
+            btn_resume=view.findViewById(R.id.resume_button);
 
             btn_start.setOnClickListener(this::onClickStart);
             btn_stop.setOnClickListener(this::onClickStop);
             btn_reset.setOnClickListener(this::onClickReset);
+            btn_pause.setOnClickListener(this::onClickPause);
+            btn_resume.setOnClickListener(this::onClickResume);
 
 
 
@@ -383,19 +406,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         }
     }
 
-
-    @Override
-    public void onStart() {
-        googleApiClient.connect();
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        googleApiClient.disconnect();
-        super.onStop();
-    }
-
    /* @Override
     public void onPause() {
         super.onPause();
@@ -467,6 +477,13 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         List<LatLng> points = gpsTrack.getPoints();
         points.add(lastKnownLatLng);
         gpsTrack.setPoints(points);
+
+        int current_position = points.lastIndexOf(lastKnownLatLng);
+        int previous_position = current_position-1;
+
+        if (previous_position >= 0){
+            showDistance(points.get(previous_position), points.get(current_position));
+        }
     }
 
     public void getDistance(){
@@ -478,6 +495,16 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             double lat = Math.abs(point.latitude - previous.latitude);
             double lng = Math.abs(point.longitude - previous.longitude);
         }
+    }
+
+    double totalDistance;
+
+    public void showDistance(@NonNull LatLng previous, @NonNull LatLng current){
+        double lat = Math.abs(previous.latitude - current.latitude);
+        double lng = Math.abs(previous.longitude - current.longitude);
+
+        double d = Math.sqrt(Math.pow(lat, 2) + Math.pow(lng, 2));
+        distanceView.setText(""+d);
     }
 }
 
