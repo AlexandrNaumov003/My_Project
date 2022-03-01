@@ -103,10 +103,10 @@
             android:text="TextView"
             app:layout_constraintBottom_toTopOf="@+id/stop_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintHorizontal_bias="0.124"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/time_view"
-            app:layout_constraintVertical_bias="0.426" />
+            app:layout_constraintVertical_bias="0.42" />
 
         <TextView
             android:id="@+id/distance_view2"
@@ -115,10 +115,10 @@
             android:text="m"
             app:layout_constraintBottom_toTopOf="@+id/stop_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.218"
+            app:layout_constraintHorizontal_bias="0.112"
             app:layout_constraintStart_toEndOf="@+id/distance_view"
             app:layout_constraintTop_toBottomOf="@+id/time_view"
-            app:layout_constraintVertical_bias="0.426" />
+            app:layout_constraintVertical_bias="0.42" />
 
         <TextView
             android:id="@+id/speed_view"
@@ -127,10 +127,10 @@
             android:text="TextView"
             app:layout_constraintBottom_toTopOf="@+id/stop_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintHorizontal_bias="0.838"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/time_view"
-            app:layout_constraintVertical_bias="0.865" />
+            app:layout_constraintVertical_bias="0.42" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

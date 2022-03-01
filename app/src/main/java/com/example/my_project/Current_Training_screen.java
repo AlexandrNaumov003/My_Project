@@ -41,7 +41,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -66,6 +72,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     private SupportMapFragment mapFragment;
     private GoogleApiClient googleApiClient;
     private LatLng lastKnownLatLng;
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference runRef;
 
 
     // Use seconds, running and wasRunning respectively
@@ -142,6 +151,8 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                         .build();
             }
 
+            firebaseDatabase = FirebaseDatabase.getInstance();
+
         }
 
     // Save the state of the stopwatch
@@ -162,7 +173,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     {
         super.onPause();
         wasRunning = running;
-        running = false;
+        running = true;
 
 
         stopLocationUpdates();
@@ -201,6 +212,21 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     public void onClickStop(View view)
     {
         running = false;
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        LocalDate today=LocalDate.now();
+
+        Calendar calendar=Calendar.getInstance();
+        long finishTime = calendar.getTimeInMillis();
+        Run r = new Run(seconds, Double.parseDouble(speedView.getText().toString().replace(",", ".")),
+                Double.parseDouble(distanceView.getText().toString().replace(",", ".")),uid, "", today, finishTime);
+
+
+        runRef = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("Runs").push();
+        r.setKey(runRef.getKey());
+        runRef.setValue(r);
+
         googleApiClient.disconnect();
 
     }
@@ -212,8 +238,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
     }
 
-    public void onClickResume(View view)
-    {
+    public void onClickResume(View view) {
         running = true;
         googleApiClient.connect();
 
@@ -367,8 +392,8 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
 
         PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.CYAN);
-        polylineOptions.width(4);
+        polylineOptions.color(Color.BLACK);
+        polylineOptions.width(25);
         gpsTrack = map.addPolyline(polylineOptions);
         }
 
@@ -469,8 +494,10 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                googleApiClient, this);
+        if (googleApiClient.isConnected()){
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    googleApiClient, this);
+        }
     }
 
     private void updateTrack() {
@@ -497,14 +524,36 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         }
     }
 
-    double totalDistance;
+    double totalDistance = 0;
 
     public void showDistance(@NonNull LatLng previous, @NonNull LatLng current){
-        double lat = Math.abs(previous.latitude - current.latitude);
+       /* double lat = Math.abs(previous.latitude - current.latitude);
         double lng = Math.abs(previous.longitude - current.longitude);
 
-        double d = Math.sqrt(Math.pow(lat, 2) + Math.pow(lng, 2));
-        distanceView.setText(""+d);
+        double d = Math.sqrt(Math.pow(lat, 2) + Math.pow(lng, 2));*/
+        //Location startloc=Location.distanceBetween(previous.latitude, previous.latitude, current.latitude, current.longitude, );
+
+        Location startPoint = new Location("previous");
+        startPoint.setLatitude(previous.latitude);
+        startPoint.setLongitude(previous.longitude);
+
+        Location endPoint = new Location("current");
+        endPoint.setLatitude(current.latitude);
+        endPoint.setLongitude(current.longitude);
+
+        float distance = startPoint.distanceTo(endPoint);
+        totalDistance += (double) distance;
+        Log.d("naumov", "distance  = " + distance);
+        Log.d("naumov", "totalDistance  = " + totalDistance);
+        Log.d("naumov", "----------------------------------");
+
+        double speed = (double) totalDistance/seconds;
+
+
+//        double distanceToShow = Double.parseDouble(new DecimalFormat("####.##").format(totalDistance));
+
+        distanceView.setText(new DecimalFormat("####.##").format(totalDistance));
+        speedView.setText(new DecimalFormat("####.##").format(speed));
     }
 }
 
