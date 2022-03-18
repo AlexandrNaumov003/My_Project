@@ -3,19 +3,34 @@ package com.example.my_project;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import android.os.Handler;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +50,6 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -92,6 +106,12 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
     private boolean wasRunning;
 
+    private BroadcastReceiver broadcastReceiver;
+        
+    private final static int TURN_OFF_POWER_SAVE_MODE_NOTIFICATION_ID = 111;
+
+    private boolean mapReady = false;
+
     public void getMyLocation() {
 
         @SuppressLint("MissingPermission") Task<Location> task = client.getLastLocation();
@@ -122,7 +142,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             }
 
-            if (savedInstanceState != null) {
+            /*if (savedInstanceState != null) {
 
                 // Get the previous state of the stopwatch
                 // if the activity has been
@@ -130,8 +150,8 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 seconds = savedInstanceState.getInt("seconds");
                 running = savedInstanceState.getBoolean("running");
                 wasRunning = savedInstanceState.getBoolean("wasRunning");
-            }
-            runTimer();
+            }*/
+//            runTimer();
 
             ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
@@ -153,22 +173,90 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             firebaseDatabase = FirebaseDatabase.getInstance();
 
+            if (TrainingViewModel.isRunning.getValue() == null){
+                TrainingViewModel.isRunning.setValue(false);
+            }
+
+            if (TrainingViewModel.isNewTraining.getValue() == null){
+                TrainingViewModel.isNewTraining.setValue(true);
+            }
+
+
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, @NonNull Intent intent) {
+                    if (TrainingViewModel.isRunning.getValue() && intent.getAction().equals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)){
+                        PowerManager powerManager = (PowerManager) requireActivity().getSystemService(Context.POWER_SERVICE);
+
+                        Toast.makeText(requireContext(), "Power mode changed", Toast.LENGTH_SHORT).show();
+
+                        if (powerManager.isPowerSaveMode()){
+                        /*if (getContext() == null){
+                            sendTurnOffPowerSavingNotification();
+                        }
+                        else {
+                            createTurnOffPowerSavingDialog();
+                        }*/
+
+                            sendTurnOffPowerSavingNotification();
+                        }
+                        else {
+                            NotificationManager notificationManager =
+                                    (NotificationManager) requireActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+
+                            notificationManager.cancel(TURN_OFF_POWER_SAVE_MODE_NOTIFICATION_ID);
+                        }
+                    }
+                }
+            };
+
         }
+
+    public void sendTurnOffPowerSavingNotification(){
+        Intent i = new Intent(requireContext(), MainActivity.class);
+//        intent_stop_alarm.setAction(ACTION_STOP_VIBRATION);
+
+        PendingIntent pintent = PendingIntent.getBroadcast(requireContext(), 0, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), "CHANNEL_ID");
+        builder.setSmallIcon(R.drawable.ic_baseline_directions_run)
+                .setContentTitle("Warning")
+                .setContentText("Turn off power saving mode in order to continue tracking")
+                .setColor(Color.RED)
+                .setAutoCancel(true)
+                .setContentIntent(pintent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) requireActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+
+
+        String channelId = "CHANNEL_ID";
+        NotificationChannel channel = new NotificationChannel(
+                channelId,
+                "Channel human readable title",
+                NotificationManager.IMPORTANCE_HIGH);
+        notificationManager.createNotificationChannel(channel);
+
+        builder.setChannelId(channelId);
+
+        notificationManager.notify(TURN_OFF_POWER_SAVE_MODE_NOTIFICATION_ID, builder.build());
+    }
 
     // Save the state of the stopwatch
     // if it's about to be destroyed.
-    @Override
+    /*@Override
     public void onSaveInstanceState(
             Bundle savedInstanceState)
     {
         savedInstanceState.putInt("seconds", seconds);
         savedInstanceState.putBoolean("running", running);
         savedInstanceState.putBoolean("wasRunning", wasRunning);
-    }
+    }*/
 
     // If the activity is paused,
     // stop the stopwatch.
-    @Override
+    /*@Override
     public void onPause()
     {
         super.onPause();
@@ -177,22 +265,39 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
 
         stopLocationUpdates();
-    }
+    }*/
 
     // If the activity is resumed,
     // start the stopwatch
     // again if it was running previously.
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
-        if (wasRunning) {
+        /*if (wasRunning) {
             running = true;
         }
 
         if (googleApiClient.isConnected()) {
             startLocationUpdates();
+        }*/
+
+        PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
+        if (powerManager.isPowerSaveMode()) {
+            createTurnOffPowerSavingDialog();
+            return;
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.d(TAG, "Permission " + Manifest.permission.ACCESS_BACKGROUND_LOCATION + " is granted");
+            if (!checkBackgroundLocationPermission()){
+                return;
+            }
+        }
+
+        if (TrainingViewModel.isRunning.getValue() != null && TrainingViewModel.isRunning.getValue()){
+            startTracking();
+        }
+
     }
 
     /* Start the stopwatch running
@@ -301,45 +406,255 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         });
     }
 
-        @Nullable
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater,
-                @Nullable ViewGroup container,
-                @Nullable Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_current_training_screen, container, false);
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_current_training_screen, container, false);
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
         }
 
-        @SuppressLint("MissingPermission")
-        @Override
-        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-            super.onViewCreated(view, savedInstanceState);
+        client = LocationServices.getFusedLocationProviderClient(requireContext());
+        timeView = view.findViewById(R.id.time_view);
+        distanceView = view.findViewById(R.id.distance_view);
+        speedView = view.findViewById(R.id.speed_view);
 
-            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-            if (mapFragment != null) {
-                mapFragment.getMapAsync(this);
+        btn_start=view.findViewById(R.id.start_button);
+        btn_stop=view.findViewById(R.id.stop_button);
+        btn_reset=view.findViewById(R.id.reset_button);
+        btn_pause=view.findViewById(R.id.pause_button);
+        btn_resume=view.findViewById(R.id.resume_button);
+
+
+//        btn_start.setOnClickListener(this::onClickStart);
+//        btn_stop.setOnClickListener(this::onClickStop);
+//        btn_reset.setOnClickListener(this::onClickReset);
+//        btn_pause.setOnClickListener(this::onClickPause);
+//        btn_resume.setOnClickListener(this::onClickResume);
+
+        btn_start.setOnClickListener(v -> startTracking());
+        btn_stop.setOnClickListener(v -> stopTracking());
+        //ToDo change reset function
+//        btn_reset.setOnClickListener(v -> stopTracking());
+        btn_pause.setOnClickListener(v -> pauseTracking());
+        btn_resume.setOnClickListener(v -> resumeTracking());
+
+
+        if (TrainingViewModel.isRunning.getValue() && !isTrainingServiceRunning()){
+
+            resumeTracking();
+
+        /*requireActivity().startService(new Intent(getContext(), TrainingService.class));
+        // Build intent that displays the App settings screen.
+        Intent intent = new Intent();
+        intent.setAction(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package",
+                BuildConfig.APPLICATION_ID, null);
+        intent.setData(uri);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);*/
+
+        }
+
+    }
+
+    public void createTurnOnPowerSavingDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setCancelable(true);
+        builder.setTitle("Stop tracking");
+        builder.setMessage("You can now turn on back power saving mode");
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
             }
+        });
 
-            client = LocationServices.getFusedLocationProviderClient(requireContext());
-            timeView = view.findViewById(R.id.time_view);
-            distanceView = view.findViewById(R.id.distance_view);
-            speedView = view.findViewById(R.id.speed_view);
+        AlertDialog alertDialog = builder.create();
 
-            btn_start=view.findViewById(R.id.start_button);
-            btn_stop=view.findViewById(R.id.stop_button);
-            btn_reset=view.findViewById(R.id.reset_button);
-            btn_pause=view.findViewById(R.id.pause_button);
-            btn_resume=view.findViewById(R.id.resume_button);
+        alertDialog.show();
+    }
 
-            btn_start.setOnClickListener(this::onClickStart);
-            btn_stop.setOnClickListener(this::onClickStop);
-            btn_reset.setOnClickListener(this::onClickReset);
-            btn_pause.setOnClickListener(this::onClickPause);
-            btn_resume.setOnClickListener(this::onClickResume);
+    public void createTurnOffPowerSavingDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setCancelable(false);
+        builder.setTitle("Start tracking");
+        builder.setMessage("In order to continue you have to turn off power saving mode");
 
 
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
 
+        builder.setNegativeButton("Back", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
 
+        AlertDialog alertDialog = builder.create();
+
+        alertDialog.show();
+    }
+
+    public boolean isTrainingServiceRunning(){
+        ActivityManager activityManager = (ActivityManager) requireContext().getSystemService(Context.ACTIVITY_SERVICE);
+
+        if (activityManager != null){
+            for (ActivityManager.RunningServiceInfo service : activityManager
+                    .getRunningServices(Integer.MAX_VALUE)){
+                if (TrainingService.class.getName().equals(service.service.getClassName())){
+                    if (service.foreground){
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
+        return false;
+    }
+
+    public void pauseTracking() {
+        Intent intent = new Intent(getContext(), TrainingService.class);
+        intent.setAction(TrainingService.ACTION_STOP_TRACKING_SERVICE);
+        requireActivity().startService(intent);
+    }
+
+    public void stopTracking(){
+
+        Intent intent = new Intent(getContext(), TrainingService.class);
+//        intent.setAction(TrainingService.ACTION_FINISH_TRACKING_SERVICE);
+
+//        stopLocationUpdates();
+
+        TrainingViewModel.locations.removeObservers(getViewLifecycleOwner());
+
+        TrainingViewModel.time.removeObservers(getViewLifecycleOwner());
+
+        TrainingViewModel.totalDistance.removeObservers(getViewLifecycleOwner());
+        TrainingViewModel.avgSpeed.removeObservers(getViewLifecycleOwner());
+        TrainingViewModel.maxSpeed.removeObservers(getViewLifecycleOwner());
+
+        requireActivity().unregisterReceiver(broadcastReceiver);
+
+        requireActivity().stopService(intent);
+
+        createTurnOnPowerSavingDialog();
+    }
+
+    public void startTracking(){
+
+        PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
+        if (powerManager.isPowerSaveMode()) {
+            createTurnOffPowerSavingDialog();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.d(TAG, "Permission " + Manifest.permission.ACCESS_BACKGROUND_LOCATION + " is granted");
+            if (!checkBackgroundLocationPermission()){
+                return;
+            }
+        }
+
+        // Define the IntentFilter.
+        IntentFilter intentFilter = new IntentFilter();
+
+        // Adding system broadcast actions sent by the system when the power save mode is changed.
+        intentFilter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED);
+
+        requireContext().registerReceiver(broadcastReceiver, intentFilter);
+
+//        startLocationUpdates();
+
+        Intent intent = new Intent(getContext(), TrainingService.class);
+        intent.setAction(TrainingService.ACTION_START_TRACKING_SERVICE);
+
+        requireActivity().startService(intent);
+
+        TrainingViewModel.locations.observe(getViewLifecycleOwner(), new Observer<List<LatLng>>() {
+            @Override
+            public void onChanged(List<LatLng> latLngs) {
+                if (mapReady){
+                    LatLng lastLocation = latLngs.get(latLngs.size()-1);
+
+                    gpsTrack.setPoints(latLngs);
+                    Log.d("murad", "Latitude: " + lastLocation.latitude
+                            + "\nLongitude: " + lastLocation.longitude);
+
+//                map.animateCamera(CameraUpdateFactory.newLatLng(lastLocation));
+                }
+
+            }
+        });
+
+        TrainingViewModel.time.observe(getViewLifecycleOwner(), new Observer<Long>() {
+            @Override
+            public void onChanged(Long seconds) {
+
+                int hours = (int) (seconds / 3600);
+                int minutes = (int) ((seconds % 3600) / 60);
+                int secs = (int) (seconds % 60);
+
+                // Format the time into hours, minutes,
+                // and time.
+                String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
+
+                timeView.setText(time);
+            }
+        });
+
+        TrainingViewModel.totalDistance.observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(Double totalDistance) {
+                distanceView.setText(new DecimalFormat("####.##").format(totalDistance) + " m");
+            }
+        });
+
+        TrainingViewModel.avgSpeed.observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(Double speed) {
+                speedView.setText(new DecimalFormat("##.##").format(speed) + " m/s");
+            }
+        });
+    }
+
+    public void resumeTracking(){
+
+        PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
+        if (powerManager.isPowerSaveMode()) {
+            createTurnOffPowerSavingDialog();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.d(TAG, "Permission " + Manifest.permission.ACCESS_BACKGROUND_LOCATION + " is granted");
+            if (!checkBackgroundLocationPermission()){
+                return;
+            }
+        }
+
+        Intent intent = new Intent(getContext(), TrainingService.class);
+        intent.setAction(TrainingService.ACTION_START_TRACKING_SERVICE);
+
+        requireActivity().startService(intent);
+    }
 
     public boolean checkPermissions(){
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -361,6 +676,21 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         return false;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public boolean checkBackgroundLocationPermission(){
+        boolean hasPermissions = true;
+
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Permission " + Manifest.permission.ACCESS_BACKGROUND_LOCATION + " is granted");
+        } else {
+            Log.d(TAG, "Permission " + Manifest.permission.ACCESS_BACKGROUND_LOCATION + " is not granted");
+            hasPermissions = false;
+            askBackgroundLocationPermission();
+        }
+
+        return hasPermissions;
+    }
+
     private void askLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Asking for the permission");
@@ -373,7 +703,18 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private void askBackgroundLocationPermission() {
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Asking for the permission");
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                Log.d(TAG, "askLocationPermission: you should show an alert dialog...");
+            }
 
+            requestPermissions( new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 33333);
+
+        }
+    }
 
     @SuppressLint("MissingPermission")
         @Override
@@ -395,7 +736,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         polylineOptions.color(Color.BLACK);
         polylineOptions.width(25);
         gpsTrack = map.addPolyline(polylineOptions);
-        }
+        mapReady = true;
+
+    }
 
     @Override
     public boolean onMyLocationButtonClick() {
@@ -423,6 +766,23 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 map.setOnMyLocationClickListener(this);
                 getMyLocation();
                 onMapReady(map);
+            }
+            else {
+                //Permission not granted
+            }
+//            triggerRebirth(requireContext());
+        }
+        else if (requestCode == 20000) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED){
+                        Log.d(TAG, "Permission " + permissions[i] + " is yet not granted");
+                    }
+                }
+
+                startTracking();
+
             }
             else {
                 //Permission not granted
