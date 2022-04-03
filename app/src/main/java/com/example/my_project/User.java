@@ -6,6 +6,7 @@ public class User {
     private String surname;
     private String email;
     private String uid;
+    private String pp;
 
     public User(String name, String surname, String email, String uid){
         this.name=name;
@@ -47,5 +48,13 @@ public class User {
 
     public void setUid(String uid) {
         this.uid = uid;
+    }
+
+    public String getPp() {
+        return pp;
+    }
+
+    public void setPp(String pp) {
+        this.pp = pp;
     }
 }

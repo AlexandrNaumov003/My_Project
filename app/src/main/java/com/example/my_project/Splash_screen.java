@@ -24,7 +24,14 @@ public class Splash_screen extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(Splash_screen.this, Log_In_scr.class);
+                Intent intent;
+                if(FirebaseUtils.isUserLoggedIn()){
+                   intent = new Intent(Splash_screen.this, MainActivity.class);
+                }
+                else {
+                    intent = new Intent(Splash_screen.this, Log_In_scr.class);
+                }
+
                 startActivity(intent);
             }
         });

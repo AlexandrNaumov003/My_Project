@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_navigation"
-    app:startDestination="@id/progress_scr">
+    app:startDestination="@id/current_Training_screen">
     <fragment
         android:id="@+id/profile_scr"
         android:name="com.example.my_project.Profile_scr"

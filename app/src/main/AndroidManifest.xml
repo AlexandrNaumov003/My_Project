@@ -43,7 +43,7 @@
             android:name=".Statistic_screen"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".Splash_screen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -61,7 +61,7 @@
             android:name=".Log_In_scr"
             android:exported="false" />
         <activity
-            android:name=".Splash_screen"
+            android:name=".MainActivity"
             android:exported="false"/>
 
         <service android:name=".TrainingService"

@@ -3,43 +3,116 @@ package com.example.my_project;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.icu.text.SymbolTable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.security.ProtectionDomain;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class Update_Profile_screen extends AppCompatActivity {
 
+    private CircleImageView iv_update_profile_screen;
     EditText et_name, et_surname, et_email;
     Button btn_save;
+
+    String uid;
+
+    public static final int SELECT_PICTURE = 2500;
+
+    Uri selectedImageUri;
+
+    public static final String ACTION_GO_TO_PROFILE_SCREEN = BuildConfig.APPLICATION_ID + "action_go_to_profile_screen";
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_profile_screen);
 
+        progressDialog = new ProgressDialog(this);
+
+        iv_update_profile_screen = findViewById(R.id.iv_update_profile_screen);
+        iv_update_profile_screen.setOnClickListener(v -> chooseProfilePicture());
+
         et_name=findViewById(R.id.et_name_update_profile_screen);
         et_surname=findViewById(R.id.et_surname_update_profile_screen);
         et_email=findViewById(R.id.et_email_update_profile_screen);
         btn_save=findViewById(R.id.btn_save_update_profile_screen);
 
+        btn_save.setOnClickListener(view -> updateUserData());
 
+        getUserData();
+    }
+
+    public void updateUserData(){
+        progressDialog.setMessage("Updating profile data");
+        progressDialog.show();
+
+        String uname=et_name.getText().toString();
+        String usurname=et_surname.getText().toString();
+        String uemail=et_email.getText().toString();
+
+        User user = new User(uname, usurname, uemail, uid);
+
+        FirebaseUtils.getCurrentUserRef().setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                UserProfileChangeRequest.Builder userProfileChangeRequest = new UserProfileChangeRequest.Builder().setPhotoUri(selectedImageUri);
+
+                FirebaseUtils.getCurrentFirebaseUser().updateProfile(userProfileChangeRequest.build()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        progressDialog.dismiss();
+                        Intent intent = new Intent(Update_Profile_screen.this, MainActivity.class);
+                        intent.setAction(ACTION_GO_TO_PROFILE_SCREEN);
+
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
+    }
+
+    public void getUserData(){
         FirebaseUtils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.exists()){
-                    User user=snapshot.getValue(User.class);
-                    String uname=user.getName();
-                    String usurname=user.getSurname();
-                    String uemail=user.getEmail();
+                if (snapshot.exists()){
+                    User user = snapshot.getValue(User.class);
+                    et_name.setText(user.getName());
+                    et_email.setText(user.getEmail());
+                    et_surname.setText(user.getSurname());
 
-                    et_name.setText(uname);
-                    et_surname.setText(usurname);
-                    et_email.setText(uemail);
+                    Uri pp = FirebaseUtils.getCurrentFirebaseUser().getPhotoUrl();
+                    Uri sample_profile = Utils.getUriToDrawable(Update_Profile_screen.this, R.drawable.sample_profile);
+
+
+                    if (pp == null){
+                        Glide.with(Update_Profile_screen.this).load(sample_profile).centerCrop().into(iv_update_profile_screen);
+                    }
+                    else {
+                        Glide.with(Update_Profile_screen.this).load(pp).centerCrop().into(iv_update_profile_screen);
+                    }
                 }
+
             }
 
             @Override
@@ -47,5 +120,40 @@ public class Update_Profile_screen extends AppCompatActivity {
 
             }
         });
+    }
+
+    // this function is triggered when
+    // the Select Image Button is clicked
+    private void chooseProfilePicture() {
+
+        // create an instance of the
+        // intent of the type image
+        Intent i = new Intent();
+        i.setType("image/*");
+        i.setAction(Intent.ACTION_GET_CONTENT);
+
+        // pass the constant to compare it
+        // with the returned requestCode
+        startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
+
+    }
+
+    // this function is triggered when user
+    // selects the image from the imageChooser
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            // compare the resultCode with the
+            // SELECT_PICTURE constant
+            if (requestCode == SELECT_PICTURE) {
+                // Get the url of the image from data
+                if (data.getData() != null) {
+                    selectedImageUri = data.getData();
+                    // update the preview image in the layout
+                    iv_update_profile_screen.setImageURI(selectedImageUri);
+                }
+            }
+        }
     }
 }

@@ -173,19 +173,19 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             firebaseDatabase = FirebaseDatabase.getInstance();
 
-            if (TrainingViewModel.isRunning.getValue() == null){
-                TrainingViewModel.isRunning.setValue(false);
+            if (TrainingService.isRunning.getValue() == null){
+                TrainingService.isRunning.setValue(false);
             }
 
-            if (TrainingViewModel.isNewTraining.getValue() == null){
-                TrainingViewModel.isNewTraining.setValue(true);
+            if (TrainingService.isNewTraining.getValue() == null){
+                TrainingService.isNewTraining.setValue(true);
             }
 
 
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, @NonNull Intent intent) {
-                    if (TrainingViewModel.isRunning.getValue() && intent.getAction().equals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)){
+                    if (TrainingService.isRunning.getValue() && intent.getAction().equals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)){
                         PowerManager powerManager = (PowerManager) requireActivity().getSystemService(Context.POWER_SERVICE);
 
                         Toast.makeText(requireContext(), "Power mode changed", Toast.LENGTH_SHORT).show();
@@ -294,7 +294,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             }
         }
 
-        if (TrainingViewModel.isRunning.getValue() != null && TrainingViewModel.isRunning.getValue()){
+        if (TrainingService.isRunning.getValue() != null && TrainingService.isRunning.getValue()){
             startTracking();
         }
 
@@ -429,11 +429,11 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         distanceView = view.findViewById(R.id.distance_view);
         speedView = view.findViewById(R.id.speed_view);
 
-        btn_start=view.findViewById(R.id.start_button);
-        btn_stop=view.findViewById(R.id.stop_button);
-        btn_reset=view.findViewById(R.id.reset_button);
-        btn_pause=view.findViewById(R.id.pause_button);
-        btn_resume=view.findViewById(R.id.resume_button);
+        btn_start=view.findViewById(R.id.btn_start_training);
+        btn_stop=view.findViewById(R.id.btn_stop_training);
+        btn_reset=view.findViewById(R.id.btn_reset_training);
+        btn_pause=view.findViewById(R.id.btn_pause_training);
+        btn_resume=view.findViewById(R.id.btn_resume_training);
 
 
 //        btn_start.setOnClickListener(this::onClickStart);
@@ -444,13 +444,17 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
         btn_start.setOnClickListener(v -> startTracking());
         btn_stop.setOnClickListener(v -> stopTracking());
-        //ToDo change reset function
-//        btn_reset.setOnClickListener(v -> stopTracking());
+        btn_reset.setOnClickListener(v -> resetTracking());
         btn_pause.setOnClickListener(v -> pauseTracking());
         btn_resume.setOnClickListener(v -> resumeTracking());
 
+        btn_stop.setVisibility(View.GONE);
+        btn_reset.setVisibility(View.GONE);
+        btn_pause.setVisibility(View.GONE);
+        btn_resume.setVisibility(View.GONE);
 
-        if (TrainingViewModel.isRunning.getValue() && !isTrainingServiceRunning()){
+
+        if (TrainingService.isRunning.getValue() && !isTrainingServiceRunning()){
 
             resumeTracking();
 
@@ -531,6 +535,13 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     }
 
     public void pauseTracking() {
+        btn_start.setVisibility(View.GONE);
+        btn_pause.setVisibility(View.GONE);
+        btn_reset.setVisibility(View.VISIBLE);
+        btn_resume.setVisibility(View.VISIBLE);
+        btn_stop.setVisibility(View.VISIBLE);
+
+
         Intent intent = new Intent(getContext(), TrainingService.class);
         intent.setAction(TrainingService.ACTION_STOP_TRACKING_SERVICE);
         requireActivity().startService(intent);
@@ -538,27 +549,41 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
     public void stopTracking(){
 
-        Intent intent = new Intent(getContext(), TrainingService.class);
-//        intent.setAction(TrainingService.ACTION_FINISH_TRACKING_SERVICE);
+        btn_start.setVisibility(View.VISIBLE);
+        btn_pause.setVisibility(View.GONE);
+        btn_reset.setVisibility(View.GONE);
+        btn_resume.setVisibility(View.GONE);
+        btn_stop.setVisibility(View.GONE);
 
+        timeView.setText("0:00:00");
+
+        Intent intent = new Intent(getContext(), TrainingService.class);
+        intent.setAction(TrainingService.ACTION_FINISH_TRACKING_SERVICE);
+
+        requireActivity().stopService(intent);
 //        stopLocationUpdates();
 
-        TrainingViewModel.locations.removeObservers(getViewLifecycleOwner());
+        TrainingService.locationsLiveData.removeObservers(getViewLifecycleOwner());
 
-        TrainingViewModel.time.removeObservers(getViewLifecycleOwner());
+        TrainingService.timeLiveData.removeObservers(getViewLifecycleOwner());
 
-        TrainingViewModel.totalDistance.removeObservers(getViewLifecycleOwner());
-        TrainingViewModel.avgSpeed.removeObservers(getViewLifecycleOwner());
-        TrainingViewModel.maxSpeed.removeObservers(getViewLifecycleOwner());
+        TrainingService.totalDistance.removeObservers(getViewLifecycleOwner());
+        TrainingService.avgSpeed.removeObservers(getViewLifecycleOwner());
+        TrainingService.maxSpeed.removeObservers(getViewLifecycleOwner());
 
         requireActivity().unregisterReceiver(broadcastReceiver);
 
-        requireActivity().stopService(intent);
 
         createTurnOnPowerSavingDialog();
     }
 
     public void startTracking(){
+
+        btn_start.setVisibility(View.GONE);
+        btn_pause.setVisibility(View.VISIBLE);
+        btn_reset.setVisibility(View.GONE);
+        btn_resume.setVisibility(View.GONE);
+        btn_stop.setVisibility(View.VISIBLE);
 
         PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
         if (powerManager.isPowerSaveMode()) {
@@ -588,7 +613,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
         requireActivity().startService(intent);
 
-        TrainingViewModel.locations.observe(getViewLifecycleOwner(), new Observer<List<LatLng>>() {
+        TrainingService.locationsLiveData.observe(getViewLifecycleOwner(), new Observer<List<LatLng>>() {
             @Override
             public void onChanged(List<LatLng> latLngs) {
                 if (mapReady){
@@ -604,7 +629,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             }
         });
 
-        TrainingViewModel.time.observe(getViewLifecycleOwner(), new Observer<Long>() {
+        TrainingService.timeLiveData.observe(getViewLifecycleOwner(), new Observer<Long>() {
             @Override
             public void onChanged(Long seconds) {
 
@@ -612,22 +637,22 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 int minutes = (int) ((seconds % 3600) / 60);
                 int secs = (int) (seconds % 60);
 
-                // Format the time into hours, minutes,
-                // and time.
+                // Format the timeLiveData into hours, minutes,
+                // and timeLiveData.
                 String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
 
                 timeView.setText(time);
             }
         });
 
-        TrainingViewModel.totalDistance.observe(getViewLifecycleOwner(), new Observer<Double>() {
+        TrainingService.totalDistance.observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
             public void onChanged(Double totalDistance) {
                 distanceView.setText(new DecimalFormat("####.##").format(totalDistance) + " m");
             }
         });
 
-        TrainingViewModel.avgSpeed.observe(getViewLifecycleOwner(), new Observer<Double>() {
+        TrainingService.avgSpeed.observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
             public void onChanged(Double speed) {
                 speedView.setText(new DecimalFormat("##.##").format(speed) + " m/s");
@@ -636,6 +661,12 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     }
 
     public void resumeTracking(){
+
+        btn_start.setVisibility(View.GONE);
+        btn_pause.setVisibility(View.VISIBLE);
+        btn_reset.setVisibility(View.GONE);
+        btn_resume.setVisibility(View.GONE);
+        btn_stop.setVisibility(View.VISIBLE);
 
         PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
         if (powerManager.isPowerSaveMode()) {
@@ -654,6 +685,30 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         intent.setAction(TrainingService.ACTION_START_TRACKING_SERVICE);
 
         requireActivity().startService(intent);
+    }
+
+    private void resetTracking() {
+        btn_start.setVisibility(View.VISIBLE);
+        btn_pause.setVisibility(View.GONE);
+        btn_reset.setVisibility(View.GONE);
+        btn_resume.setVisibility(View.GONE);
+        btn_stop.setVisibility(View.GONE);
+
+        Intent intent = new Intent(getContext(), TrainingService.class);
+        intent.setAction(TrainingService.ACTION_RESET_TRACKING_SERVICE);
+
+        requireActivity().startService(intent);
+
+        timeView.setText("0:00:00");
+
+        TrainingService.locationsLiveData.removeObservers(getViewLifecycleOwner());
+
+        TrainingService.timeLiveData.removeObservers(getViewLifecycleOwner());
+
+        TrainingService.totalDistance.removeObservers(getViewLifecycleOwner());
+        TrainingService.avgSpeed.removeObservers(getViewLifecycleOwner());
+        TrainingService.maxSpeed.removeObservers(getViewLifecycleOwner());
+
     }
 
     public boolean checkPermissions(){
@@ -781,7 +836,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                     }
                 }
 
-                startTracking();
+//                startTracking();
 
             }
             else {

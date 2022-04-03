@@ -63,7 +63,12 @@ public class Registration_screen extends AppCompatActivity implements TextWatche
                                 String uid=firebaseUser.getUid();
                                 User user=new User(name.getText().toString(), surname.getText().toString(), email.getText().toString(), uid);
                                 DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference("Users");
-                                databaseReference.child(uid).setValue(user);
+                                databaseReference.child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        startActivity(new Intent(Registration_screen.this, MainActivity.class));
+                                    }
+                                });
                             }
                         }
                     });

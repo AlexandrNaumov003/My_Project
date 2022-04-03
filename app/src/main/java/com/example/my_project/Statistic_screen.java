@@ -175,8 +175,8 @@ public class Statistic_screen extends AppCompatActivity {
                     //Log.d("naumov", "Day is " + day);
                     double distance = data.child("distance").getValue(double.class);
                     //Log.d("naumov", "Distance is " + distance);
-                    int time = data.child("time").getValue(int.class);
-                    //Log.d("naumov", "Time is " + time);
+                    int time = data.child("timeLiveData").getValue(int.class);
+                    //Log.d("naumov", "Time is " + timeLiveData);
                     double speed = data.child("speed").getValue(double.class);
                     //Log.d("naumov", "Speed is " + speed);
 

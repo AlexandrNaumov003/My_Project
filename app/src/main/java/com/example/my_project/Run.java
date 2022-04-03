@@ -120,7 +120,7 @@ public class Run {
     @Override
     public String toString() {
         return "Run{" +
-                "time='" + time + '\'' +
+                "timeLiveData='" + time + '\'' +
                 ", speed='" + speed + '\'' +
                 ", distance='" + distance + '\'' +
                 ", uid='" + uid + '\'' +

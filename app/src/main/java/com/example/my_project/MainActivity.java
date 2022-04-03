@@ -6,6 +6,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -22,6 +23,11 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         NavController navController = Navigation.findNavController(this, R.id.fragmentContainerView);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+        Intent getIntent = getIntent();
+        if (getIntent.getAction() != null && getIntent.getAction().equals(Update_Profile_screen.ACTION_GO_TO_PROFILE_SCREEN)){
+            bottomNavigationView.setSelectedItemId(R.id.profile_scr);
+        }
     }
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
