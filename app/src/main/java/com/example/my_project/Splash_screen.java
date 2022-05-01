@@ -6,12 +6,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
 public class Splash_screen extends AppCompatActivity {
     Button btn;
     TextView tv_welcome;
+    Animation rotation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +27,7 @@ public class Splash_screen extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent;
                 if(FirebaseUtils.isUserLoggedIn()){
                    intent = new Intent(Splash_screen.this, MainActivity.class);
@@ -40,6 +44,8 @@ public class Splash_screen extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                rotation =  AnimationUtils.loadAnimation(getApplicationContext(),
+                        R.anim.nauomov_rotation);
                 btn.setVisibility(View.VISIBLE);
                 tv_welcome.setVisibility(View.INVISIBLE);
             }

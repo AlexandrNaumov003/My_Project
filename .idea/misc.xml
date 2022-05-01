@@ -3,7 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.248" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_baseline_directions_run.xml" value="0.2703125" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_baseline_person.xml" value="0.248" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_baseline_timer.xml" value="0.248" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_baseline_trending_up.xml" value="0.248" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_launcher_background.xml" value="0.248" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_launcher_run1_background.xml" value="0.248" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/drawable/ic_launcher_run_background.xml" value="0.248" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout-w1240dp/activity_abc.xml" value="0.2390625" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout-w936dp/activity_abc.xml" value="0.190625" />
         <entry key="..\:/Users/user/AndroidStudioProjects/My_Project/app/src/main/res/layout/activity_abc.xml" value="0.25416666666666665" />

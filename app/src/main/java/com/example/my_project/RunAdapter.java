@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class RunAdapter extends ArrayAdapter<Run>  {
 
@@ -34,7 +35,6 @@ public class RunAdapter extends ArrayAdapter<Run>  {
     @Override
     public Run getItem(int i) {
         return runs.get(i);
-
     }
 
     @Override
@@ -46,11 +46,22 @@ public class RunAdapter extends ArrayAdapter<Run>  {
     public View getView(int i, View view, ViewGroup viewGroup) {
         Run tmp=runs.get(i);
         view= LayoutInflater.from(context).inflate(R.layout.row_list_run, null);
+
+
         ImageView imageView=view.findViewById(R.id.iv_row_run);
         TextView distance=view.findViewById(R.id.tv_distance_row_run);
         TextView time=view.findViewById(R.id.tv_time_row_run);
         TextView speed=view.findViewById(R.id.tv_speed_row_run);
-        time.setText(""+tmp.getTime());
+
+        int hours = (int) (tmp.getTime() / 3600);
+        int minutes = (int) ((tmp.getTime() % 3600) / 60);
+        int secs = (int) (tmp.getTime() % 60);
+
+        // Format the totalTime into hours, minutes,
+        // and totalTime.
+        String text = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
+
+        time.setText(text);
         distance.setText(""+tmp.getDistance());
         speed.setText(""+tmp.getSpeed());
 

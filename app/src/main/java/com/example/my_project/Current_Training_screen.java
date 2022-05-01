@@ -565,11 +565,10 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
         TrainingService.locationsLiveData.removeObservers(getViewLifecycleOwner());
 
-        TrainingService.timeLiveData.removeObservers(getViewLifecycleOwner());
+        TrainingService.totalTime.removeObservers(getViewLifecycleOwner());
 
         TrainingService.totalDistance.removeObservers(getViewLifecycleOwner());
         TrainingService.avgSpeed.removeObservers(getViewLifecycleOwner());
-        TrainingService.maxSpeed.removeObservers(getViewLifecycleOwner());
 
         requireActivity().unregisterReceiver(broadcastReceiver);
 
@@ -629,7 +628,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             }
         });
 
-        TrainingService.timeLiveData.observe(getViewLifecycleOwner(), new Observer<Long>() {
+        TrainingService.totalTime.observe(getViewLifecycleOwner(), new Observer<Long>() {
             @Override
             public void onChanged(Long seconds) {
 
@@ -637,8 +636,8 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                 int minutes = (int) ((seconds % 3600) / 60);
                 int secs = (int) (seconds % 60);
 
-                // Format the timeLiveData into hours, minutes,
-                // and timeLiveData.
+                // Format the totalTime into hours, minutes,
+                // and totalTime.
                 String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
 
                 timeView.setText(time);
@@ -703,11 +702,10 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
         TrainingService.locationsLiveData.removeObservers(getViewLifecycleOwner());
 
-        TrainingService.timeLiveData.removeObservers(getViewLifecycleOwner());
+        TrainingService.totalTime.removeObservers(getViewLifecycleOwner());
 
         TrainingService.totalDistance.removeObservers(getViewLifecycleOwner());
         TrainingService.avgSpeed.removeObservers(getViewLifecycleOwner());
-        TrainingService.maxSpeed.removeObservers(getViewLifecycleOwner());
 
     }
 

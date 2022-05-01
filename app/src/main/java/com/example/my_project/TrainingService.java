@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -31,12 +30,14 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
 import com.google.maps.android.SphericalUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.List;
 
 public class TrainingService extends LifecycleService {
@@ -49,24 +50,19 @@ public class TrainingService extends LifecycleService {
     public static final String ACTION_MOVE_TO_TRAINING_FRAGMENT = BuildConfig.APPLICATION_ID + "action_move_to_tracking_fragment";
 
 
-    public static final String TAG = "tracking";
+    public static final String TAG = "training";
     
     public final static int NOTIFICATION_ID = 333;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
 
-    private static List<LatLng> locations;
     private static long time;
-    private static long totalTime;
 
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     private NotificationManager notificationManager;
 
     private NotificationCompat.Builder notificationBuilder;
-
-    private long start;
-    private long end;
 
     public static MutableLiveData<Boolean> isRunning = new MutableLiveData<>();
 
@@ -74,25 +70,16 @@ public class TrainingService extends LifecycleService {
 
     public static MutableLiveData<List<LatLng>> locationsLiveData = new MutableLiveData<>();
 
-    public static MutableLiveData<List<LatLng>> stops = new MutableLiveData<>();
-
-    public static MutableLiveData<Long> timeLiveData = new MutableLiveData<>();
-    public static MutableLiveData<Long> totalTimeLiveData = new MutableLiveData<>();
+    public static MutableLiveData<Long> totalTime = new MutableLiveData<>();
     public static MutableLiveData<Double> avgSpeed = new MutableLiveData<>();
-    public static MutableLiveData<HashMap<String, Double>> speeds = new MutableLiveData<>();
-    public static MutableLiveData<Double> maxSpeed = new MutableLiveData<>();
     public static MutableLiveData<Double> totalDistance = new MutableLiveData<>();
 
     public static void clearData(){
         isRunning.setValue(false);
         isNewTraining.setValue(true);
         locationsLiveData = new MutableLiveData<>();
-        speeds.setValue(new HashMap<>());
-        stops = new MutableLiveData<>();
-        timeLiveData.setValue(0L);
-        totalTimeLiveData.setValue(0L);
+        totalTime.setValue(0L);
         avgSpeed.setValue(0D);
-        maxSpeed.setValue(0D);
         totalDistance.setValue(0D);
     }
 
@@ -102,10 +89,10 @@ public class TrainingService extends LifecycleService {
         public void run() {
 
             // If running is true, increment the
-            // timeLiveData variable.
+            // totalTime variable.
             if (TrainingService.isRunning.getValue()) {
-                Log.d("tracking", "timeLiveData = " + time);
-                TrainingService.timeLiveData.setValue(time);
+                Log.d("training", "totalTime = " + time);
+                TrainingService.totalTime.setValue(time);
                 time++;
             }
 
@@ -125,8 +112,6 @@ public class TrainingService extends LifecycleService {
                 stopTraining();
                 return;
             }
-//            double latitude = locationResult.getLastLocation().getLatitude();
-//            double longitude = locationResult.getLastLocation().getLongitude();
 
             double latitude = round(locationResult.getLastLocation().getLatitude(), 3);
             double longitude = round(locationResult.getLastLocation().getLongitude(), 3);
@@ -134,23 +119,13 @@ public class TrainingService extends LifecycleService {
             Log.d(TAG, "latitude = " + latitude);
             Log.d(TAG, "longitude = " + longitude);
 
+            List<LatLng> locations = TrainingService.locationsLiveData.getValue();
+
             locations.add(new LatLng(latitude, longitude));
 
             TrainingService.locationsLiveData.setValue(locations);
 
-            int current_position = locations.size()-1;
-            int previous_position = current_position-1;
-
-            double absoluteDistance = SphericalUtil.computeLength(TrainingService.locationsLiveData.getValue());
-
-            Log.d(TAG, "absoluteDistance = " + absoluteDistance);
-
-            if (previous_position >= 0){
-                calculateDistance(locations.get(previous_position), locations.get(current_position));
-            }
-
-//            Toast.makeText(TrainingService.this, "Latitude: " + latitude
-//                    + "\nLongitude: " + longitude, Toast.LENGTH_SHORT).show();
+            calculateDistance();
         }
     };
 
@@ -183,8 +158,6 @@ public class TrainingService extends LifecycleService {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        locations = new ArrayList<>();
-
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
@@ -194,33 +167,34 @@ public class TrainingService extends LifecycleService {
 
         String action = intent.getAction();
 
-        if (action.equals(ACTION_START_TRACKING_SERVICE)) {
-            Toast.makeText(this, "Training Started", Toast.LENGTH_SHORT).show();
-            Log.d("murad", "Training Started");
+        switch (action) {
+            case ACTION_START_TRACKING_SERVICE:
+                Toast.makeText(this, "Training Started", Toast.LENGTH_SHORT).show();
+                Log.d("naumov", "Training Started");
 
-            if (TrainingService.isNewTraining.getValue() != null) {
-                if (TrainingService.isNewTraining.getValue()){
-                    startTraining();
+                if (TrainingService.isNewTraining.getValue() != null) {
+                    if (TrainingService.isNewTraining.getValue()) {
+                        startTraining();
+                    } else {
+                        resumeTraining();
+                    }
                 }
-                else {
-                    resumeTraining();
+                break;
+            case ACTION_STOP_TRACKING_SERVICE:
+                stopTraining();
+                break;
+            case ACTION_RESET_TRACKING_SERVICE:
+                finishTraining(false);
+                break;
+            case PowerManager.ACTION_POWER_SAVE_MODE_CHANGED:
+                PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+                Toast.makeText(this, "Power mode changed", Toast.LENGTH_SHORT).show();
+
+                if (powerManager.isPowerSaveMode()) {
+                    createTurnOffPowerSavingDialog();
                 }
-            }
-        }
-        else if (action.equals(ACTION_STOP_TRACKING_SERVICE)) {
-            stopTraining();
-        }
-        else if (action.equals(ACTION_RESET_TRACKING_SERVICE)){
-            finishTraining(false);
-        }
-        else if (action.equals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)) {
-            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-
-            Toast.makeText(this, "Power mode changed", Toast.LENGTH_SHORT).show();
-
-            if (powerManager.isPowerSaveMode()) {
-                createTurnOffPowerSavingDialog();
-            }
+                break;
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -229,9 +203,8 @@ public class TrainingService extends LifecycleService {
     public void createTurnOffPowerSavingDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(false);
-        builder.setTitle("Start tracking");
+        builder.setTitle("Start training");
         builder.setMessage("In order to continue you have to turn off power saving mode");
-
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -275,14 +248,10 @@ public class TrainingService extends LifecycleService {
         TrainingService.isNewTraining.setValue(false);
 
         Toast.makeText(this, "Training started", Toast.LENGTH_SHORT).show();
-        Log.d("tracking", "STARTED");
+        Log.d("training", "STARTED");
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(ACTION_MOVE_TO_TRAINING_FRAGMENT);
-//        intent_stop_alarm.setAction(ACTION_STOP_VIBRATION);
-
-        /*PendingIntent pintent = PendingIntent.getBroadcast(this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);*/
 
         PendingIntent pintent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -310,8 +279,6 @@ public class TrainingService extends LifecycleService {
 
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
-        start = System.currentTimeMillis()/1000;
-
         handler.post(runnable);
 
         TrainingService.isRunning.setValue(true);
@@ -320,7 +287,7 @@ public class TrainingService extends LifecycleService {
     }
 
     private void resumeTraining(){
-        Log.d("tracking", "RESUMED");
+        Log.d("training", "RESUMED");
 
         TrainingService.isRunning.setValue(true);
 
@@ -329,7 +296,6 @@ public class TrainingService extends LifecycleService {
     }
 
     private void stopTraining() {
-//        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
 
         TrainingService.isRunning.setValue(false);
 
@@ -338,7 +304,7 @@ public class TrainingService extends LifecycleService {
     }
 
     private void finishTraining(boolean upload){
-        Log.d("tracking", "FINISHED");
+        Log.d("training", "FINISHED");
 
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
 
@@ -347,87 +313,63 @@ public class TrainingService extends LifecycleService {
 
         handler.removeCallbacks(runnable);
 
-        time = 0;
-
-        TrainingService.clearData();
-
-
-//        addTraining(locationsLiveData);
-
         stopForeground(true);
         stopSelf();
 
         notificationManager.cancel(NOTIFICATION_ID);
 
-        end = System.currentTimeMillis()/1000;
-
         if (upload){
-
+            uploadRun();
         }
 
-//        end = Calendar.getInstance().getTimeInMillis();
+        time = 0;
 
+        TrainingService.clearData();
     }
 
-    //ToDo adjust training data
+    private void uploadRun() {
 
-   /* public Task<Void> uploadTraining(long start, long end){
+        double speed = avgSpeed.getValue();
+        double distance = totalDistance.getValue();
+        long totalTimeValue = totalTime.getValue();
 
-        String trainingId = FirebaseUtils.getCurrentUserTrainingsRef().push().getKey();
+        DatabaseReference ref = FirebaseUtils.getCurrentUserRuns();
+        String key = ref.push().getKey();
 
-        long timeLiveData = TrainingService.timeLiveData.getValue();
-        long totalTimeLiveData = TrainingService.totalTimeLiveData.getValue();
-        double speed = TrainingService.avgSpeed.getValue();
-        double maxSpeed = TrainingService.maxSpeed.getValue();
-        double totalDistance = TrainingService.totalDistance.getValue();
-        HashMap<String, Double> speeds = TrainingService.speeds.getValue();
+        Run run = new Run(totalTimeValue, speed, distance, FirebaseUtils.getCurrentUID(), key,
+                LocalDate.now(), System.currentTimeMillis());
 
+        ref.child(key).setValue(run).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(TrainingService.this, "Run was successfully saved", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(TrainingService.this, "Saving your run failed", Toast.LENGTH_SHORT).show();
+                }
 
-        Training training = new Training(trainingId, start, end, timeLiveData, totalTimeLiveData, speed, maxSpeed, speeds, totalDistance);
-        Log.d("tracking", training.toString());
+            }
+        });
+    }
 
+    public void calculateDistance(){
 
-        return FirebaseUtils.getCurrentUserTrainingsRef().child(trainingId).setValue(training);
-    }*/
+        double absoluteDistance = SphericalUtil.computeLength(TrainingService.locationsLiveData.getValue())/1000;
 
-    public void calculateDistance(@NonNull LatLng previous, @NonNull LatLng current){
-       /* double lat = Math.abs(previous.latitude - current.latitude);
-        double lng = Math.abs(previous.longitude - current.longitude);
+        TrainingService.totalDistance.setValue(absoluteDistance);
 
-        double d = Math.sqrt(Math.pow(lat, 2) + Math.pow(lng, 2));*/
-        //Location startloc=Location.distanceBetween(previous.latitude, previous.latitude, current.latitude, current.longitude, );
+        long seconds = TrainingService.totalTime.getValue();
+        double hours = seconds/3600;
 
-        Location startPoint = new Location("previous");
-        startPoint.setLatitude(previous.latitude);
-        startPoint.setLongitude(previous.longitude);
+        TrainingService.avgSpeed.setValue(round(TrainingService.totalDistance.getValue() / hours, 3));
 
-        Location endPoint = new Location("current");
-        endPoint.setLatitude(current.latitude);
-        endPoint.setLongitude(current.longitude);
-
-//        double distance = round(startPoint.distanceTo(endPoint), 3);
-
-        double distance = SphericalUtil.computeDistanceBetween(previous, current);
-
-        double absoluteDistance = SphericalUtil.computeLength(TrainingService.locationsLiveData.getValue());
-
-        TrainingService.totalDistance.setValue(TrainingService.totalDistance.getValue() + distance);
-
-        TrainingService.avgSpeed.setValue(round((double) TrainingService.totalDistance.getValue()/ TrainingService.timeLiveData.getValue(), 3));
-        HashMap<String, Double> addedSpeeds = TrainingService.speeds.getValue();
-        addedSpeeds.put(String.valueOf(TrainingService.timeLiveData.getValue()), TrainingService.avgSpeed.getValue());
-        TrainingService.speeds.setValue(addedSpeeds);
-
-        TrainingService.maxSpeed.setValue(Math.max(TrainingService.avgSpeed.getValue(), TrainingService.maxSpeed.getValue()));
 
         Log.d(TAG, "-----------------------------------tracking-----------------------------");
         Log.d(TAG, "");
-        Log.d(TAG, "distance = " + distance);
         Log.d(TAG, "absoluteDistance = " + absoluteDistance);
         Log.d(TAG, "totalDistance = " + TrainingService.totalDistance.getValue());
         Log.d(TAG, "avgSpeed = " + TrainingService.avgSpeed.getValue());
-        Log.d(TAG, "maxSpeed = " + TrainingService.maxSpeed.getValue());
-        Log.d(TAG, "speeds = " + TrainingService.speeds.getValue().toString());
         Log.d(TAG, "");
         Log.d(TAG, "-------------------------------tracking---------------------------------");
 
@@ -435,26 +377,17 @@ public class TrainingService extends LifecycleService {
 
     @Override
     public boolean stopService(@NonNull Intent name) {
-
-        if (name.getAction() != null && name.getAction().equals(ACTION_FINISH_TRACKING_SERVICE)){
-        }
-            finishTraining(false);
-
-            Toast.makeText(this, "Training Stopped", Toast.LENGTH_SHORT).show();
-            Log.d("murad", "Training Stopped");
-
         return super.stopService(name);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        stopLocationUpdates();
 
         finishTraining(true);
 
-        Toast.makeText(this, "Training Finished", Toast.LENGTH_SHORT).show();
-        Log.d("murad", "Training Finished");
+        Toast.makeText(this, "Training finished", Toast.LENGTH_SHORT).show();
+        Log.d("naumov", "Training finished");
 
     }
 }

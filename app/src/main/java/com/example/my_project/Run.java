@@ -1,9 +1,11 @@
 package com.example.my_project;
 
+import androidx.annotation.NonNull;
+
 import java.time.LocalDate;
 
 public class Run {
-    private int time;
+    private long time;
     private double speed;
     private double distance;
     private String uid;
@@ -14,9 +16,7 @@ public class Run {
     private int day;
     private long finishTime;
 
-
-
-    public Run(int time, double speed, double distance, String uid, String key, int year, int month, int day) {
+    public Run(long time, double speed, double distance, String uid, String key, int year, int month, int day) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
@@ -28,15 +28,16 @@ public class Run {
         this.day=day;
 
     }
-    public Run(int time, double speed, double distance, String uid, String key, LocalDate localDate, long finishTime) {
+
+    public Run(long time, double speed, double distance, String uid, String key, @NonNull LocalDate localDate, long finishTime) {
         this.image = R.drawable.ic_baseline_directions_run;
         this.time = time;
         this.speed = speed;
         this.distance = distance;
         this.uid = uid;
         this.key = key;
-        this.year=localDate.getYear();
-        this.month=localDate.getMonthValue();
+        this.year = localDate.getYear();
+        this.month = localDate.getMonthValue();
         this.day=localDate.getDayOfMonth();
         this.finishTime=finishTime;
 
@@ -45,11 +46,11 @@ public class Run {
 
     }
 
-    public int getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -120,7 +121,7 @@ public class Run {
     @Override
     public String toString() {
         return "Run{" +
-                "timeLiveData='" + time + '\'' +
+                "totalTime='" + time + '\'' +
                 ", speed='" + speed + '\'' +
                 ", distance='" + distance + '\'' +
                 ", uid='" + uid + '\'' +
