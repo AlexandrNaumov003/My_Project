@@ -65,7 +65,7 @@
         app:layout_constraintVertical_bias="0.03" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/tv_statistics"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
@@ -79,4 +79,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lv_last_trainings_statistic_screen"
         app:layout_constraintVertical_bias="0.1" />
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/barChart_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_statistics" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

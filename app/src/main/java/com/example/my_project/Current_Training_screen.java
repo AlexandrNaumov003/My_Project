@@ -68,10 +68,7 @@ import java.util.Locale;
 
 public class Current_Training_screen extends Fragment implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
-        OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener {
+        OnMapReadyCallback {
 
     public static String TAG = "naumov";
 
@@ -83,28 +80,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
 
     private Polyline gpsTrack;
-    private SupportMapFragment mapFragment;
-    private GoogleApiClient googleApiClient;
-    private LatLng lastKnownLatLng;
-
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference runRef;
-
-
-    // Use seconds, running and wasRunning respectively
-    // to record the number of seconds passed,
-    // whether the stopwatch is running and
-    // whether the stopwatch was running
-    // before the activity was paused.
-
-    // Number of seconds displayed
-    // on the stopwatch.
-    private int seconds = 0;
-
-    // Is the stopwatch running?
-    private boolean running;
-
-    private boolean wasRunning;
 
     private BroadcastReceiver broadcastReceiver;
         
@@ -142,36 +117,13 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
             }
 
-            /*if (savedInstanceState != null) {
-
-                // Get the previous state of the stopwatch
-                // if the activity has been
-                // destroyed and recreated.
-                seconds = savedInstanceState.getInt("seconds");
-                running = savedInstanceState.getBoolean("running");
-                wasRunning = savedInstanceState.getBoolean("wasRunning");
-            }*/
-//            runTimer();
-
             ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-
-            BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavigationView);
 
             SupportMapFragment mapFragment =
                     (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
             if (mapFragment != null) {
                 mapFragment.getMapAsync(this);
             }
-
-            if (googleApiClient == null) {
-                googleApiClient = new GoogleApiClient.Builder(requireContext())
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .addApi(LocationServices.API)
-                        .build();
-            }
-
-            firebaseDatabase = FirebaseDatabase.getInstance();
 
             if (TrainingService.isRunning.getValue() == null){
                 TrainingService.isRunning.setValue(false);
@@ -191,13 +143,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                         Toast.makeText(requireContext(), "Power mode changed", Toast.LENGTH_SHORT).show();
 
                         if (powerManager.isPowerSaveMode()){
-                        /*if (getContext() == null){
-                            sendTurnOffPowerSavingNotification();
-                        }
-                        else {
-                            createTurnOffPowerSavingDialog();
-                        }*/
-
                             sendTurnOffPowerSavingNotification();
                         }
                         else {
@@ -243,43 +188,12 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         notificationManager.notify(TURN_OFF_POWER_SAVE_MODE_NOTIFICATION_ID, builder.build());
     }
 
-    // Save the state of the stopwatch
-    // if it's about to be destroyed.
-    /*@Override
-    public void onSaveInstanceState(
-            Bundle savedInstanceState)
-    {
-        savedInstanceState.putInt("seconds", seconds);
-        savedInstanceState.putBoolean("running", running);
-        savedInstanceState.putBoolean("wasRunning", wasRunning);
-    }*/
-
-    // If the activity is paused,
-    // stop the stopwatch.
-    /*@Override
-    public void onPause()
-    {
-        super.onPause();
-        wasRunning = running;
-        running = true;
-
-
-        stopLocationUpdates();
-    }*/
-
     // If the activity is resumed,
     // start the stopwatch
     // again if it was running previously.
     @Override
     public void onResume() {
         super.onResume();
-        /*if (wasRunning) {
-            running = true;
-        }
-
-        if (googleApiClient.isConnected()) {
-            startLocationUpdates();
-        }*/
 
         PowerManager powerManager = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
         if (powerManager.isPowerSaveMode()) {
@@ -298,112 +212,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             startTracking();
         }
 
-    }
-
-    /* Start the stopwatch running
-     when the Start button is clicked.
-     Below method gets called
-     when the Start button is clicked.*/
-    public void onClickStart(View view)
-    {
-        running = true;
-        googleApiClient.connect();
-    }
-
-    // Stop the stopwatch running
-    // when the Stop button is clicked.
-    // Below method gets called
-    // when the Stop button is clicked.
-    public void onClickStop(View view)
-    {
-        running = false;
-
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        LocalDate today=LocalDate.now();
-
-        Calendar calendar=Calendar.getInstance();
-        long finishTime = calendar.getTimeInMillis();
-        Run r = new Run(seconds, Double.parseDouble(speedView.getText().toString().replace(",", ".")),
-                Double.parseDouble(distanceView.getText().toString().replace(",", ".")),uid, "", today, finishTime);
-
-
-        runRef = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("Runs").push();
-        r.setKey(runRef.getKey());
-        runRef.setValue(r);
-
-        googleApiClient.disconnect();
-
-    }
-
-    public void onClickPause(View view)
-    {
-        running = false;
-        googleApiClient.disconnect();
-
-    }
-
-    public void onClickResume(View view) {
-        running = true;
-        googleApiClient.connect();
-
-    }
-
-    // Reset the stopwatch when
-    // the Reset button is clicked.
-    // Below method gets called
-    // when the Reset button is clicked.
-    public void onClickReset(View view)
-    {
-        running = false;
-        seconds = 0;
-    }
-
-    // Sets the NUmber of seconds on the timer.
-    // The runTimer() method uses a Handler
-    // to increment the seconds and
-    // update the text view.
-    private void runTimer()
-    {
-
-        // Get the text view.
-
-        // Creates a new Handler
-        final Handler handler = new Handler();
-
-        // Call the post() method,
-        // passing in a new Runnable.
-        // The post() method processes
-        // code without a delay,
-        // so the code in the Runnable
-        // will run almost immediately.
-        handler.post(new Runnable() {
-            @Override
-
-            public void run()
-            {
-                int hours = seconds / 3600;
-                int minutes = (seconds % 3600) / 60;
-                int secs = seconds % 60;
-
-                // Format the seconds into hours, minutes,
-                // and seconds.
-                String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
-
-                // Set the text view text.
-                timeView.setText(time);
-
-                // If running is true, increment the
-                // seconds variable.
-                if (running) {
-                    seconds++;
-                }
-
-                // Post the code again
-                // with a delay of 1 second.
-                handler.postDelayed(this, 1000);
-            }
-        });
     }
 
     @Nullable
@@ -435,13 +243,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         btn_pause=view.findViewById(R.id.btn_pause_training);
         btn_resume=view.findViewById(R.id.btn_resume_training);
 
-
-//        btn_start.setOnClickListener(this::onClickStart);
-//        btn_stop.setOnClickListener(this::onClickStop);
-//        btn_reset.setOnClickListener(this::onClickReset);
-//        btn_pause.setOnClickListener(this::onClickPause);
-//        btn_resume.setOnClickListener(this::onClickResume);
-
         btn_start.setOnClickListener(v -> startTracking());
         btn_stop.setOnClickListener(v -> stopTracking());
         btn_reset.setOnClickListener(v -> resetTracking());
@@ -455,20 +256,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
 
 
         if (TrainingService.isRunning.getValue() && !isTrainingServiceRunning()){
-
             resumeTracking();
-
-        /*requireActivity().startService(new Intent(getContext(), TrainingService.class));
-        // Build intent that displays the App settings screen.
-        Intent intent = new Intent();
-        intent.setAction(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package",
-                BuildConfig.APPLICATION_ID, null);
-        intent.setData(uri);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);*/
-
         }
 
     }
@@ -479,12 +267,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         builder.setTitle("Stop tracking");
         builder.setMessage("You can now turn on back power saving mode");
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
         AlertDialog alertDialog = builder.create();
 
@@ -498,19 +281,9 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         builder.setMessage("In order to continue you have to turn off power saving mode");
 
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
-        builder.setNegativeButton("Back", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        builder.setNegativeButton("Back", (dialog, which) -> dialog.dismiss());
 
         AlertDialog alertDialog = builder.create();
 
@@ -770,19 +543,19 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     }
 
     @SuppressLint("MissingPermission")
-        @Override
-        public void onMapReady(@NonNull GoogleMap googleMap) {
-            map = googleMap;
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        map = googleMap;
 
-            if (checkPermissions()){
-                map.setMyLocationEnabled(true);
+        if (checkPermissions()){
+            map.setMyLocationEnabled(true);
 
-                map.setOnMyLocationButtonClickListener(this);
-                map.setOnMyLocationClickListener(this);
-                getMyLocation();
-            }
-            GoogleMapOptions options = new GoogleMapOptions();
-            options.mapType(GoogleMap.MAP_TYPE_NORMAL);
+            map.setOnMyLocationButtonClickListener(this);
+            map.setOnMyLocationClickListener(this);
+            getMyLocation();
+        }
+        GoogleMapOptions options = new GoogleMapOptions();
+        options.mapType(GoogleMap.MAP_TYPE_NORMAL);
 
 
         PolylineOptions polylineOptions = new PolylineOptions();
@@ -803,6 +576,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
     public void onMyLocationClick(@NonNull Location location) {
 
     }
+
     @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -823,7 +597,6 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
             else {
                 //Permission not granted
             }
-//            triggerRebirth(requireContext());
         }
         else if (requestCode == 20000) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -834,139 +607,11 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
                     }
                 }
 
-//                startTracking();
-
             }
             else {
                 //Permission not granted
             }
-//            triggerRebirth(requireContext());
         }
-    }
-
-   /* @Override
-    public void onPause() {
-        super.onPause();
-        stopLocationUpdates();
-    }*/
-
-   /* @Override
-    public void onResume() {
-        super.onResume();
-        if (googleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
-    }*/
-
-
-
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        startLocationUpdates();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-
-
-    @Override
-    public void onLocationChanged(@NonNull Location location) {
-        lastKnownLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        updateTrack();
-    }
-
-
-    @SuppressLint("MissingPermission")
-    protected void startLocationUpdates() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(4000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-    }
-
-    protected void stopLocationUpdates() {
-        if (googleApiClient.isConnected()){
-            LocationServices.FusedLocationApi.removeLocationUpdates(
-                    googleApiClient, this);
-        }
-    }
-
-    private void updateTrack() {
-        List<LatLng> points = gpsTrack.getPoints();
-        points.add(lastKnownLatLng);
-        gpsTrack.setPoints(points);
-
-        int current_position = points.lastIndexOf(lastKnownLatLng);
-        int previous_position = current_position-1;
-
-        if (previous_position >= 0){
-            showDistance(points.get(previous_position), points.get(current_position));
-        }
-    }
-
-    public void getDistance(){
-        List<LatLng> points = gpsTrack.getPoints();
-        double distance = 0;
-        for (int i = 1; i< points.size(); i++){
-            LatLng previous = points.get(i-1);
-            LatLng point = points.get(i);
-            double lat = Math.abs(point.latitude - previous.latitude);
-            double lng = Math.abs(point.longitude - previous.longitude);
-        }
-    }
-
-    double totalDistance = 0;
-
-    public void showDistance(@NonNull LatLng previous, @NonNull LatLng current){
-       /* double lat = Math.abs(previous.latitude - current.latitude);
-        double lng = Math.abs(previous.longitude - current.longitude);
-
-        double d = Math.sqrt(Math.pow(lat, 2) + Math.pow(lng, 2));*/
-        //Location startloc=Location.distanceBetween(previous.latitude, previous.latitude, current.latitude, current.longitude, );
-
-        Location startPoint = new Location("previous");
-        startPoint.setLatitude(previous.latitude);
-        startPoint.setLongitude(previous.longitude);
-
-        Location endPoint = new Location("current");
-        endPoint.setLatitude(current.latitude);
-        endPoint.setLongitude(current.longitude);
-
-        float distance = startPoint.distanceTo(endPoint);
-        totalDistance += (double) distance;
-        Log.d("naumov", "distance  = " + distance);
-        Log.d("naumov", "totalDistance  = " + totalDistance);
-        Log.d("naumov", "----------------------------------");
-
-        double speed = (double) totalDistance/seconds;
-
-
-//        double distanceToShow = Double.parseDouble(new DecimalFormat("####.##").format(totalDistance));
-
-        distanceView.setText(new DecimalFormat("####.##").format(totalDistance));
-        speedView.setText(new DecimalFormat("####.##").format(speed));
     }
 }
 

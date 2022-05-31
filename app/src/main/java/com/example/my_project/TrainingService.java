@@ -8,7 +8,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
@@ -108,7 +107,7 @@ public class TrainingService extends LifecycleService {
         public void onLocationResult(@NonNull LocationResult locationResult) {
             super.onLocationResult(locationResult);
 
-            if (!FirebaseUtils.isUserLoggedIn()){
+            if (!Utils.isUserLoggedIn()){
                 stopTraining();
                 return;
             }
@@ -206,19 +205,9 @@ public class TrainingService extends LifecycleService {
         builder.setTitle("Start training");
         builder.setMessage("In order to continue you have to turn off power saving mode");
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
-        builder.setNegativeButton("Back", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        builder.setNegativeButton("Back", (dialog, which) -> dialog.dismiss());
 
         AlertDialog alertDialog = builder.create();
 
@@ -333,10 +322,10 @@ public class TrainingService extends LifecycleService {
         double distance = totalDistance.getValue();
         long totalTimeValue = totalTime.getValue();
 
-        DatabaseReference ref = FirebaseUtils.getCurrentUserRuns();
+        DatabaseReference ref = Utils.getCurrentUserRuns();
         String key = ref.push().getKey();
 
-        Run run = new Run(totalTimeValue, speed, distance, FirebaseUtils.getCurrentUID(), key,
+        Run run = new Run(totalTimeValue, speed, distance, Utils.getCurrentUID(), key,
                 LocalDate.now(), System.currentTimeMillis());
 
         ref.child(key).setValue(run).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -373,11 +362,6 @@ public class TrainingService extends LifecycleService {
         Log.d(TAG, "");
         Log.d(TAG, "-------------------------------tracking---------------------------------");
 
-    }
-
-    @Override
-    public boolean stopService(@NonNull Intent name) {
-        return super.stopService(name);
     }
 
     @Override

@@ -39,12 +39,7 @@ public class Log_In_scr extends AppCompatActivity implements TextWatcher {
 
         tv_sign_up=findViewById(R.id.tv_sign_up_log_in);
         tv_click_here=findViewById(R.id.tv_forgot_password_click_login);
-        tv_click_here.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createDialog();
-            }
-        });
+        tv_click_here.setOnClickListener(view -> createDialog());
         tv_sign_up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

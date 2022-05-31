@@ -1,7 +1,5 @@
 package com.example.my_project;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,23 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.PhoneAuthCredential;
-import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -131,7 +119,7 @@ public class Profile_scr extends Fragment implements View.OnClickListener {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                FirebaseUtils.getFirebaseAuth().signOut();
+                Utils.getFirebaseAuth().signOut();
                 startActivity(new Intent(requireContext(), Log_In_scr.class));
             }
         });
@@ -144,7 +132,7 @@ public class Profile_scr extends Fragment implements View.OnClickListener {
     }
 
     public void getUserData(){
-        FirebaseUtils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
+        Utils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
@@ -153,13 +141,14 @@ public class Profile_scr extends Fragment implements View.OnClickListener {
                     email.setText(user.getEmail());
                     surname.setText(user.getSurname());
 
-                    Uri pp = FirebaseUtils.getCurrentFirebaseUser().getPhotoUrl();
-                    Uri sample_profile = Utils.getUriToDrawable(requireActivity(), R.drawable.sample_profile);
+                    Uri pp = Utils.getFirebaseUser().getPhotoUrl();
+
 
                     if (pp == null){
-                        Glide.with(requireContext()).load(sample_profile).centerCrop().into(iv_profile_screen);
+                        Glide.with(requireContext()).load(R.drawable.profile).centerCrop().into(iv_profile_screen);
                     }
-                    else {
+                    //needed because of parent activity
+                    else if (getActivity() != null){
                         Glide.with(Profile_scr.this).load(pp).centerCrop().into(iv_profile_screen);
                     }
                 }

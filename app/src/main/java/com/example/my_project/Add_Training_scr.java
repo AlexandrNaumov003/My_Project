@@ -53,21 +53,7 @@ public class Add_Training_scr extends AppCompatActivity implements View.OnClickL
             Calendar calendar=Calendar.getInstance();
             Run r = new Run(Integer.parseInt(time.getText().toString()), Double.parseDouble(speed.getText().toString()), Double.parseDouble(distance.getText().toString()),uid, "", today, calendar.getTimeInMillis());
 
-           /* Run r1=new Run(1, "speed1", "dist1", uid, "", 2022, 11,1);
-            Run r2=new Run(2, "speed2", "dist2", uid, "", 2022, 11,23);
-            Run r3=new Run(3, "speed3", "dist3", uid, "", 2022, 11,30);
-            Run r4=new Run(4, "speed4", "dist4", uid, "", 2022, 11,4);
-            Run r5=new Run(5, "speed5", "dist5", uid, "", 2022, 11,8);
-
-            ArrayList<Run> arrayList=new ArrayList<>();
-            arrayList.add(r1);
-            arrayList.add(r2);
-            arrayList.add(r3);
-            arrayList.add(r4);
-            arrayList.add(r5);*/
-
-
-            runRef = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("Runs").push();
+            runRef = Utils.getCurrentUserRuns().push();
             r.setKey(runRef.getKey());
             runRef.setValue(r);
 

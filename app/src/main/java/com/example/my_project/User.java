@@ -14,6 +14,7 @@ public class User {
         this.email=email;
         this.uid=uid;
     }
+
     public User(){
 
     }

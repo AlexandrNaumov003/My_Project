@@ -15,7 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.1"
-        android:src="@drawable/sample_profile" />
+        android:src="@drawable/profile" />
 
     <TextView
         android:id="@+id/tv_name_profile_screen"

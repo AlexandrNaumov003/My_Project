@@ -45,8 +45,7 @@ public class RunAdapter extends ArrayAdapter<Run>  {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         Run tmp=runs.get(i);
-        view= LayoutInflater.from(context).inflate(R.layout.row_list_run, null);
-
+        view=LayoutInflater.from(context).inflate(R.layout.row_list_run, null);
 
         ImageView imageView=view.findViewById(R.id.iv_row_run);
         TextView distance=view.findViewById(R.id.tv_distance_row_run);
@@ -62,8 +61,8 @@ public class RunAdapter extends ArrayAdapter<Run>  {
         String text = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
 
         time.setText(text);
-        distance.setText(""+tmp.getDistance());
-        speed.setText(""+tmp.getSpeed());
+        distance.setText(String.valueOf(tmp.getDistance()));
+        speed.setText(String.valueOf(tmp.getSpeed()));
 
         return view;
     }

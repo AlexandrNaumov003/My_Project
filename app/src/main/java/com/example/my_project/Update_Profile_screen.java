@@ -5,10 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.icu.text.SymbolTable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -18,10 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.security.ProtectionDomain;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -71,13 +66,13 @@ public class Update_Profile_screen extends AppCompatActivity {
 
         User user = new User(uname, usurname, uemail, uid);
 
-        FirebaseUtils.getCurrentUserRef().setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Utils.getCurrentUserRef().setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
                 UserProfileChangeRequest.Builder userProfileChangeRequest = new UserProfileChangeRequest.Builder().setPhotoUri(selectedImageUri);
 
-                FirebaseUtils.getCurrentFirebaseUser().updateProfile(userProfileChangeRequest.build()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                Utils.getFirebaseUser().updateProfile(userProfileChangeRequest.build()).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         progressDialog.dismiss();
@@ -92,7 +87,7 @@ public class Update_Profile_screen extends AppCompatActivity {
     }
 
     public void getUserData(){
-        FirebaseUtils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
+        Utils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
@@ -101,12 +96,10 @@ public class Update_Profile_screen extends AppCompatActivity {
                     et_email.setText(user.getEmail());
                     et_surname.setText(user.getSurname());
 
-                    Uri pp = FirebaseUtils.getCurrentFirebaseUser().getPhotoUrl();
-                    Uri sample_profile = Utils.getUriToDrawable(Update_Profile_screen.this, R.drawable.sample_profile);
-
+                    Uri pp = Utils.getFirebaseUser().getPhotoUrl();
 
                     if (pp == null){
-                        Glide.with(Update_Profile_screen.this).load(sample_profile).centerCrop().into(iv_update_profile_screen);
+                        Glide.with(Update_Profile_screen.this).load(R.drawable.profile).centerCrop().into(iv_update_profile_screen);
                     }
                     else {
                         Glide.with(Update_Profile_screen.this).load(pp).centerCrop().into(iv_update_profile_screen);

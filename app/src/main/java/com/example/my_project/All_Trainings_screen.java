@@ -49,9 +49,9 @@ public class All_Trainings_screen extends AppCompatActivity {
             }
         });
 
-        RunList = new ArrayList<Run>();
+        RunList = new ArrayList<>();
         lv = findViewById(R.id.lv_trainings_all_trainings_screen);
-        run_ref = FirebaseUtils.getCurrentUserRuns();
+        run_ref = Utils.getCurrentUserRuns();
 
         LocalDate today = LocalDate.now();
         selectedDate = today;
@@ -92,26 +92,23 @@ public class All_Trainings_screen extends AppCompatActivity {
     }
 
     private void retrieveData(int year, int month) {
-        Query query1=run_ref.orderByChild("year").equalTo(year);
-        DatabaseReference ref1=query1.getRef();
+        Query query3=run_ref.orderByChild("finishTime");
 
-        Query query2=ref1.orderByChild("month").equalTo(month);
-        DatabaseReference ref2=query2.getRef();
-
-        Query query3=ref2.orderByChild("finishTime");
         query3.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()){
+                    return;
+                }
+
                 RunList = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     Run r = data.getValue(Run.class);
-                    RunList.add(r);
+                    if (r.getMonth() == month && r.getYear() == year){
+                        RunList.add(r);
+                    }
                 }
-                /*int length=RunList.size()-1;
-                for (int i = length; i >=0 ; i--) {
-                    Run r= RunList.get(length-i);
-                    RunList.set(i, r);
-                }*/
+
                 Collections.reverse(RunList);
 
                 adapter = new RunAdapter(RunList,All_Trainings_screen.this, 0, 0);
@@ -125,4 +122,4 @@ public class All_Trainings_screen extends AppCompatActivity {
         });
     }
 
-    }
+}

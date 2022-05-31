@@ -29,7 +29,6 @@ public class Statistic_screen extends AppCompatActivity {
     double max_distance=0;
     int max_time=0;
     double max_speed=0;
-    int trainings_amount=0;
 
     TextInputEditText spinner_period_statistic_screen;
 
@@ -154,13 +153,11 @@ public class Statistic_screen extends AppCompatActivity {
         points_time[0] = 0;
         points_speed[0] = 0;
 
-        DatabaseReference run_data = FirebaseUtils.getCurrentUserRuns();
+        DatabaseReference run_data = Utils.getCurrentUserRuns();
 
         Query query_year = run_data.orderByChild("year").equalTo(current_year_value);
         DatabaseReference ref = query_year.getRef();
         Query query_month = ref.orderByChild("month").equalTo(current_month_value);
-
-        //Log.d("naumov", "Month is " + current_month_value);
 
         graphView_distance.removeAllSeries();
         graphView_time.removeAllSeries();
@@ -228,8 +225,6 @@ public class Statistic_screen extends AppCompatActivity {
                     graphView_time.onDataChanged(false, false);
 
 
-
-
                     //graphView_speed.getViewport().setMinY(0);
                     graphView_speed.getViewport().setMaxY(max_speed+10);
 
@@ -237,36 +232,6 @@ public class Statistic_screen extends AppCompatActivity {
                     graphView_speed.getViewport().setMaxX(localDate.lengthOfMonth());
                     graphView_speed.onDataChanged(false, false);
 
-
-
-
-
-                  /*
-                    // optional styles
-                    //graph.setTitleTextSize(40);
-                    //graph.setTitleColor(Color.BLUE);
-                    //graph.getGridLabelRenderer().setVerticalAxisTitleTextSize(40);
-                    graphView_distance.getGridLabelRenderer().setVerticalAxisTitleColor(Color.BLUE);
-                    //graph.getGridLabelRenderer().setHorizontalAxisTitleTextSize(40);
-                    graphView_distance.getGridLabelRenderer().setHorizontalAxisTitleColor(Color.BLUE);
-
-*/
-  /*                  // set manual X bounds
-                    graphView_distance.getViewport().setYAxisBoundsManual(true);
-                    //graphView_distance.getViewport().setMinY(0);
-                    graphView_distance.getViewport().setMaxY(max_distance+10);
-                    graphView_distance.getViewport().setXAxisBoundsManual(true);
-                    //graphView_distance.getViewport().setMinX(0);
-                    graphView_distance.getViewport().setMaxX(localDate.lengthOfMonth());
-                    // enable scaling
-                    graphView_distance.getViewport().setScalable(true);
-
-*/
-/*
-                    Log.d("naumov", "Day " + day + " , Distance " + points_distance[day]);
-                    Log.d("naumov", "Day " + day + " , Time " + points_time[day]);
-                    Log.d("naumov", "Day " + day + " , Speed " + points_speed[day]);
-                    Log.d("naumov", "------------------------------------------------------");*/
                 }
             }
 
@@ -275,15 +240,6 @@ public class Statistic_screen extends AppCompatActivity {
 
             }
         });
-
-/*
-
-        for (int i = 0; i < points_distance.length; i++) {
-            Log.d("naumov", "Day " + i + " , Distance " + points_distance[i]);
-            Log.d("naumov", "Day " + i + " , Time " + points_time[i]);
-            Log.d("naumov", "Day " + i + " , Speed " + points_speed[i]);
-        }
-*/
 
         for (int i = 0; i < dataPoints_distance.length; i++) {
             double distance = points_distance[i];
@@ -294,21 +250,6 @@ public class Statistic_screen extends AppCompatActivity {
             dataPoints_time[i] = new DataPoint(i, time);
             dataPoints_speed[i] = new DataPoint(i, speed);
         }
-/*
-
-        // after adding data to our line graph series.
-        // on below line we are setting
-        // title for our graph view.
-        graphView_distance.setTitle("Distance");
-
-        // on below line we are setting
-        // text color to our graph view.
-        graphView_distance.setTitleColor(R.color.purple_200);
-
-        // on below line we are setting
-        // our title text size.
-
-*/
 
     }
 

@@ -18,8 +18,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
 
-import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -35,6 +38,7 @@ public class Progress_scr extends Fragment {
     RunAdapter adapter;
     DatabaseReference run_ref;
     TextView tv_more_trainings, tv_more_statistics;
+    GraphView barChart_distance;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -58,6 +62,7 @@ public class Progress_scr extends Fragment {
      * @return A new instance of fragment Progress_scr.
      */
     // TODO: Rename and change types and number of parameters
+    @NonNull
     public static Progress_scr newInstance(String param1, String param2) {
         Progress_scr fragment = new Progress_scr();
         Bundle args = new Bundle();
@@ -77,15 +82,10 @@ public class Progress_scr extends Fragment {
 
         //// TODO: init Elements
 
-
-
-
-
-
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_progress_scr, container, false);
@@ -111,39 +111,69 @@ public class Progress_scr extends Fragment {
                 startActivity(intent);
             }
         });
-        RunList = new ArrayList<Run>();
+        RunList = new ArrayList<>();
         lv = view.findViewById(R.id.lv_last_trainings_statistic_screen);
-        run_ref = FirebaseUtils.getCurrentUserRuns();
+        barChart_distance = view.findViewById(R.id.barChart_distance);
+        run_ref = Utils.getCurrentUserRuns();
 
-        LocalDate today = LocalDate.now();
-        int year = today.getYear();
-        int month = today.getMonthValue();
-        retrieveData(year, month);
+        retrieveData();
+        retrieveBarChartData();
+    }
+
+    private void retrieveBarChartData() {
+
+        Query query = run_ref.orderByChild("finishTime");
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()){
+                    return;
+                }
+
+                double[] distances = new double[Month.values().length+1];
+
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    Run run = data.getValue(Run.class);
+                    int month = run.getMonth();
+                    distances[month] += run.getDistance();
+                }
+
+                DataPoint[] dataPoints = new DataPoint[13];
+                dataPoints[0] = new DataPoint(0, 0);
+
+                for (Month month : Month.values()) {
+                    int monthValue = month.getValue();
+                    dataPoints[monthValue] = new DataPoint(monthValue, distances[monthValue]);
+                }
+
+                BarGraphSeries<DataPoint> series = new BarGraphSeries<>(dataPoints);
+                barChart_distance.addSeries(series);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
 
-    private void retrieveData(int year, int month) {
-        Query query1=run_ref.orderByChild("year").equalTo(year);
-        DatabaseReference ref1=query1.getRef();
+    private void retrieveData() {
+        Query query=run_ref.orderByChild("finishTime").limitToLast(3);
 
-        Query query2=ref1.orderByChild("month").equalTo(month);
-        DatabaseReference ref2=query2.getRef();
-
-        Query query3=ref2.orderByChild("finishTime").limitToLast(3);
-
-        query3.addValueEventListener(new ValueEventListener() {
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()){
+                    return;
+                }
+
                 RunList = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     Run r = data.getValue(Run.class);
                     RunList.add(r);
                 }
-                /*int length=RunList.size()-1;
-                for (int i = length; i >=0 ; i--) {
-                    Run r= RunList.get(length-i);
-                    RunList.set(i, r);
-                }*/
+
                 Collections.reverse(RunList);
                 adapter = new RunAdapter(RunList,getContext(), 0, 0);
                 lv.setAdapter(adapter);

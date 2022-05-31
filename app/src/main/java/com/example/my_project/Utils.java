@@ -1,49 +1,56 @@
 package com.example.my_project;
 
-import android.content.ContentResolver;
-import android.content.Context;
-import android.net.Uri;
-
-import androidx.annotation.AnyRes;
 import androidx.annotation.NonNull;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public class Utils {
+
     public final static DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public final static DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMMM yyyy");
-
-    public static String TimeToText(@NonNull LocalTime time){
-        return time.format(timeFormat);
-    }
-
-    public static LocalTime TextToTime(String time){
-        return LocalTime.parse(time, timeFormat);
-    }
 
     public static String DateToText(@NonNull LocalDate date){
         return date.format(dateFormat);
     }
 
-    public static LocalDate TextToDate(String date){
-        return LocalDate.parse(date, dateFormat);
+    public static FirebaseUser getFirebaseUser(){
+        return getFirebaseAuth().getCurrentUser();
     }
 
-    /**
-     * get uri to drawable or any other resource type if u wish
-     * @param context - context
-     * @param drawableId - drawable res id
-     * @return - uri
-     */
-    public static Uri getUriToDrawable(@NonNull Context context, @AnyRes int drawableId) {
+    @NonNull
+    public static FirebaseAuth getFirebaseAuth(){
+        return FirebaseAuth.getInstance();
+    }
 
-        return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
-                + "://" + context.getResources().getResourcePackageName(drawableId)
-                + '/' + context.getResources().getResourceTypeName(drawableId)
-                + '/' + context.getResources().getResourceEntryName(drawableId) );
+    @NonNull
+    public static FirebaseDatabase getDatabase(){
+        return FirebaseDatabase.getInstance();
+    }
+
+    @NonNull
+    public static String getCurrentUID(){
+        return getFirebaseUser().getUid();
+    }
+
+    public static boolean isUserLoggedIn(){
+        return getFirebaseUser() != null;
+    }
+
+    @NonNull
+    public static DatabaseReference getCurrentUserRuns(){
+        return getDatabase().getReference("Runs").child(getCurrentUID()).getRef();
+    }
+
+    @NonNull
+    public static DatabaseReference getCurrentUserRef(){
+        return getDatabase().getReference("Users").child(getCurrentUID()).getRef();
     }
 }

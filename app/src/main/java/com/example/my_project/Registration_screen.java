@@ -49,7 +49,6 @@ public class Registration_screen extends AppCompatActivity implements TextWatche
         mAuth = FirebaseAuth.getInstance();
 
 
-
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

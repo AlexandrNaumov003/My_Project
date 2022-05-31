@@ -29,7 +29,7 @@ public class Splash_screen extends AppCompatActivity {
             public void onClick(View view) {
 
                 Intent intent;
-                if(FirebaseUtils.isUserLoggedIn()){
+                if(Utils.isUserLoggedIn()){
                    intent = new Intent(Splash_screen.this, MainActivity.class);
                 }
                 else {
