@@ -376,7 +376,7 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         // Adding system broadcast actions sent by the system when the power save mode is changed.
         intentFilter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED);
 
-        requireContext().registerReceiver(broadcastReceiver, intentFilter);
+        requireActivity().registerReceiver(broadcastReceiver, intentFilter);
 
 //        startLocationUpdates();
 
@@ -420,14 +420,14 @@ public class Current_Training_screen extends Fragment implements GoogleMap.OnMyL
         TrainingService.totalDistance.observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
             public void onChanged(Double totalDistance) {
-                distanceView.setText(new DecimalFormat("####.##").format(totalDistance) + " m");
+                distanceView.setText(new DecimalFormat("####.##").format(totalDistance) + " km");
             }
         });
 
         TrainingService.avgSpeed.observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
             public void onChanged(Double speed) {
-                speedView.setText(new DecimalFormat("##.##").format(speed) + " m/s");
+                speedView.setText(new DecimalFormat("##.##").format(speed) + " km/h");
             }
         });
     }

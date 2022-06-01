@@ -66,7 +66,7 @@ public class Update_Profile_screen extends AppCompatActivity {
 
         User user = new User(uname, usurname, uemail, uid);
 
-        Utils.getCurrentUserRef().setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+        Utils.getUser().setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
@@ -87,7 +87,7 @@ public class Update_Profile_screen extends AppCompatActivity {
     }
 
     public void getUserData(){
-        Utils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
+        Utils.getUser().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){

@@ -308,7 +308,7 @@ public class TrainingService extends LifecycleService {
         notificationManager.cancel(NOTIFICATION_ID);
 
         if (upload){
-            uploadRun();
+            createRun();
         }
 
         time = 0;
@@ -316,30 +316,19 @@ public class TrainingService extends LifecycleService {
         TrainingService.clearData();
     }
 
-    private void uploadRun() {
+    private void createRun() {
 
         double speed = avgSpeed.getValue();
         double distance = totalDistance.getValue();
         long totalTimeValue = totalTime.getValue();
 
-        DatabaseReference ref = Utils.getCurrentUserRuns();
-        String key = ref.push().getKey();
-
-        Run run = new Run(totalTimeValue, speed, distance, Utils.getCurrentUID(), key,
+        Run run = new Run(totalTimeValue, speed, distance, Utils.getUID(),
                 LocalDate.now(), System.currentTimeMillis());
 
-        ref.child(key).setValue(run).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(TrainingService.this, "Run was successfully saved", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(TrainingService.this, "Saving your run failed", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
+        Intent intent = new Intent(this, Add_Training_scr.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("run", run);
+        startActivity(intent);
     }
 
     public void calculateDistance(){
@@ -349,7 +338,7 @@ public class TrainingService extends LifecycleService {
         TrainingService.totalDistance.setValue(absoluteDistance);
 
         long seconds = TrainingService.totalTime.getValue();
-        double hours = seconds/3600;
+        double hours = (double) seconds/3600;
 
         TrainingService.avgSpeed.setValue(round(TrainingService.totalDistance.getValue() / hours, 3));
 

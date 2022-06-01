@@ -24,6 +24,7 @@
             android:layout_gravity="center_horizontal"
             android:textAppearance="@android:style/TextAppearance.Large"
             android:textSize="50sp"
+            android:text="00:00:00"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
@@ -35,7 +36,7 @@
             android:id="@+id/distance_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
+            android:text="0 km"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.124"
@@ -43,21 +44,10 @@
             app:layout_constraintTop_toBottomOf="@+id/time_view" />
 
         <TextView
-            android:id="@+id/distance_view2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="m"
-            android:textSize="20sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.112"
-            app:layout_constraintStart_toEndOf="@+id/distance_view"
-            app:layout_constraintTop_toBottomOf="@+id/time_view" />
-
-        <TextView
             android:id="@+id/speed_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
+            android:text="0 km/h"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.838"

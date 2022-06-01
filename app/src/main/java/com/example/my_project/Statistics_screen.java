@@ -7,7 +7,9 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
@@ -23,32 +25,33 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.time.LocalDate;
 
-public class Statistic_screen extends AppCompatActivity {
+public class Statistics_screen extends AppCompatActivity {
     GraphView graphView_distance,graphView_time, graphView_speed;
     LineGraphSeries<DataPoint> series_distance, series_time, series_speed;
     double max_distance=0;
-    int max_time=0;
+    double max_time=0;
     double max_speed=0;
 
     TextInputEditText spinner_period_statistic_screen;
 
     LocalDate selectedDate;
-
-
+    Button show_statistics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistic_screen);
 
-        LocalDate today = LocalDate.now();
-        selectedDate = today;
+        selectedDate=LocalDate.now();
+
+        show_statistics = findViewById(R.id.show_statistics);
+        show_statistics.setOnClickListener(v -> showGraphs(selectedDate));
 
         spinner_period_statistic_screen = findViewById(R.id.spinner_period_statistic_screen);
         spinner_period_statistic_screen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog datePickerDialog = new DatePickerDialog(Statistic_screen.this, AlertDialog.THEME_HOLO_LIGHT);
+                DatePickerDialog datePickerDialog = new DatePickerDialog(Statistics_screen.this, AlertDialog.THEME_HOLO_LIGHT);
                 datePickerDialog.getDatePicker().setBackgroundColor(Color.TRANSPARENT);
 
                 int selected_day = selectedDate.getDayOfMonth();
@@ -65,8 +68,6 @@ public class Statistic_screen extends AppCompatActivity {
                         selectedDate = LocalDate.of(year, month, day);
                         String text = Utils.DateToText(selectedDate);
                         spinner_period_statistic_screen.setText(text);
-
-                        showGraphs(selectedDate);
                     }
                 });
                 datePickerDialog.show();
@@ -122,9 +123,9 @@ public class Statistic_screen extends AppCompatActivity {
         graphView_speed.getGridLabelRenderer().setVerticalAxisTitle("km/h");
         graphView_speed.getGridLabelRenderer().setHorizontalAxisTitle("day");
 
-        String today_text = Utils.DateToText(today);
+        String today_text = Utils.DateToText(selectedDate);
         spinner_period_statistic_screen.setText(today_text);
-        showGraphs(today);
+        showGraphs(selectedDate);
 
     }
 
@@ -153,7 +154,7 @@ public class Statistic_screen extends AppCompatActivity {
         points_time[0] = 0;
         points_speed[0] = 0;
 
-        DatabaseReference run_data = Utils.getCurrentUserRuns();
+        DatabaseReference run_data = Utils.getUserRuns();
 
         Query query_year = run_data.orderByChild("year").equalTo(current_year_value);
         DatabaseReference ref = query_year.getRef();
@@ -172,18 +173,20 @@ public class Statistic_screen extends AppCompatActivity {
                     //Log.d("naumov", "Day is " + day);
                     double distance = data.child("distance").getValue(double.class);
                     //Log.d("naumov", "Distance is " + distance);
-                    int time = data.child("totalTime").getValue(int.class);
+                    long time = data.child("time").getValue(long.class);
+                    Log.d("naumov", "time = " + time);
+                    double minutes = (double) time / 60;
+                    Log.d("naumov", "minutes = " + minutes);
                     //Log.d("naumov", "Time is " + totalTime);
                     double speed = data.child("speed").getValue(double.class);
                     //Log.d("naumov", "Speed is " + speed);
 
                     max_distance = Math.max(max_distance, distance);
-                    max_time = Math.max(max_time, time);
+                    max_time = Math.max(max_time, minutes);
                     max_speed = Math.max(max_speed, speed);
 
-                    //// TODO: 13.02.2022 average speed
                     points_distance[day] += distance;
-                    points_time[day] += time;
+                    points_time[day] += minutes;
 
                     sum_speed[day] += speed;
                     count_speed[day]++;

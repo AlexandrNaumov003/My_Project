@@ -8,7 +8,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class Utils {
@@ -36,7 +35,7 @@ public class Utils {
     }
 
     @NonNull
-    public static String getCurrentUID(){
+    public static String getUID(){
         return getFirebaseUser().getUid();
     }
 
@@ -45,12 +44,12 @@ public class Utils {
     }
 
     @NonNull
-    public static DatabaseReference getCurrentUserRuns(){
-        return getDatabase().getReference("Runs").child(getCurrentUID()).getRef();
+    public static DatabaseReference getUserRuns(){
+        return getDatabase().getReference("Runs").child(getUID()).getRef();
     }
 
     @NonNull
-    public static DatabaseReference getCurrentUserRef(){
-        return getDatabase().getReference("Users").child(getCurrentUID()).getRef();
+    public static DatabaseReference getUser(){
+        return getDatabase().getReference("Users").child(getUID()).getRef();
     }
 }

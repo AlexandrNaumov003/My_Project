@@ -44,8 +44,6 @@ public class Splash_screen extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                rotation =  AnimationUtils.loadAnimation(getApplicationContext(),
-                        R.anim.nauomov_rotation);
                 btn.setVisibility(View.VISIBLE);
                 tv_welcome.setVisibility(View.INVISIBLE);
             }

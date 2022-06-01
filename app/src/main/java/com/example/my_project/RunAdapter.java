@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -47,10 +49,10 @@ public class RunAdapter extends ArrayAdapter<Run>  {
         Run tmp=runs.get(i);
         view=LayoutInflater.from(context).inflate(R.layout.row_list_run, null);
 
-        ImageView imageView=view.findViewById(R.id.iv_row_run);
         TextView distance=view.findViewById(R.id.tv_distance_row_run);
         TextView time=view.findViewById(R.id.tv_time_row_run);
         TextView speed=view.findViewById(R.id.tv_speed_row_run);
+        TextView date=view.findViewById(R.id.tv_date_row_run);
 
         int hours = (int) (tmp.getTime() / 3600);
         int minutes = (int) ((tmp.getTime() % 3600) / 60);
@@ -63,6 +65,16 @@ public class RunAdapter extends ArrayAdapter<Run>  {
         time.setText(text);
         distance.setText(String.valueOf(tmp.getDistance()));
         speed.setText(String.valueOf(tmp.getSpeed()));
+
+        int year = tmp.getYear();
+        int month = tmp.getMonth();
+        int day = tmp.getDay();
+
+        LocalDate runDate = LocalDate.of(year, month, day);
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dateText = runDate.format(dateFormat);
+
+        date.setText(dateText);
 
         return view;
     }

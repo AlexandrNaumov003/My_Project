@@ -2,48 +2,34 @@ package com.example.my_project;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Run {
+public class Run implements Serializable {
+
     private long time;
     private double speed;
     private double distance;
     private String uid;
     private String key;
-    private int image;
     private int year;
     private int month;
     private int day;
     private long finishTime;
 
-    public Run(long time, double speed, double distance, String uid, String key, int year, int month, int day) {
-        this.image = R.drawable.ic_baseline_directions_run;
-        this.time = time;
-        this.speed = speed;
-        this.distance = distance;
-        this.uid = uid;
-        this.key = key;
-        this.year=year;
-        this.month=month;
-        this.day=day;
+    public Run(){
 
     }
 
-    public Run(long time, double speed, double distance, String uid, String key, @NonNull LocalDate localDate, long finishTime) {
-        this.image = R.drawable.ic_baseline_directions_run;
+    public Run(long time, double speed, double distance, String uid, @NonNull LocalDate localDate, long finishTime) {
         this.time = time;
         this.speed = speed;
         this.distance = distance;
         this.uid = uid;
-        this.key = key;
         this.year = localDate.getYear();
         this.month = localDate.getMonthValue();
         this.day=localDate.getDayOfMonth();
         this.finishTime=finishTime;
-
-    }
-    public Run() {
-
     }
 
     public long getTime() {
@@ -110,14 +96,6 @@ public class Run {
         this.key = key;
     }
 
-    public int getImage() {
-        return image;
-    }
-
-    public void setImage(int image) {
-        this.image = image;
-    }
-
     @Override
     public String toString() {
         return "Run{" +
@@ -126,7 +104,6 @@ public class Run {
                 ", distance='" + distance + '\'' +
                 ", uid='" + uid + '\'' +
                 ", key='" + key + '\'' +
-                ", image=" + image +
                 '}';
     }
 

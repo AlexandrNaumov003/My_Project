@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -33,28 +32,21 @@ public class All_Trainings_screen extends AppCompatActivity {
 
     LocalDate selectedDate;
 
-    Button add;
+    Button show;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_trainings_screen);
         getSupportActionBar().hide();
 
-        add=findViewById(R.id.add);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent=new Intent(All_Trainings_screen.this, Add_Training_scr.class);
-                startActivity(intent);
-            }
-        });
-
         RunList = new ArrayList<>();
         lv = findViewById(R.id.lv_trainings_all_trainings_screen);
-        run_ref = Utils.getCurrentUserRuns();
+        run_ref = Utils.getUserRuns();
 
-        LocalDate today = LocalDate.now();
-        selectedDate = today;
+        selectedDate = LocalDate.now();
+
+        show=findViewById(R.id.show);
+        show.setOnClickListener(view -> retrieveData(selectedDate.getYear(), selectedDate.getMonthValue()));
 
         spinner_period_all_trainings_screen = findViewById(R.id.spinner_period_all_trainings_screen);
         spinner_period_all_trainings_screen.setOnClickListener(new View.OnClickListener() {
@@ -77,17 +69,15 @@ public class All_Trainings_screen extends AppCompatActivity {
                         selectedDate = LocalDate.of(year, month, day);
                         String text = Utils.DateToText(selectedDate);
                         spinner_period_all_trainings_screen.setText(text);
-
-                        retrieveData(selected_year,selected_month);
                     }
                 });
                 datePickerDialog.show();
             }
         });
 
-        String today_text = Utils.DateToText(today);
+        String today_text = Utils.DateToText(selectedDate);
         spinner_period_all_trainings_screen.setText(today_text);
-        retrieveData(today.getYear(),today.getMonthValue());
+        retrieveData(selectedDate.getYear(), selectedDate.getMonthValue());
 
     }
 

@@ -132,7 +132,7 @@ public class Profile_scr extends Fragment implements View.OnClickListener {
     }
 
     public void getUserData(){
-        Utils.getCurrentUserRef().addValueEventListener(new ValueEventListener() {
+        Utils.getUser().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){

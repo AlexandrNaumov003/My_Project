@@ -107,14 +107,14 @@ public class Progress_scr extends Fragment {
         tv_more_statistics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(requireContext(), Statistic_screen.class);
+                Intent intent=new Intent(requireContext(), Statistics_screen.class);
                 startActivity(intent);
             }
         });
         RunList = new ArrayList<>();
         lv = view.findViewById(R.id.lv_last_trainings_statistic_screen);
         barChart_distance = view.findViewById(R.id.barChart_distance);
-        run_ref = Utils.getCurrentUserRuns();
+        run_ref = Utils.getUserRuns();
 
         retrieveData();
         retrieveBarChartData();
